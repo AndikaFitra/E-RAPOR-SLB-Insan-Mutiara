@@ -31,3 +31,4 @@ class SekolahSeeder extends Seeder
         );
     }
 }
+

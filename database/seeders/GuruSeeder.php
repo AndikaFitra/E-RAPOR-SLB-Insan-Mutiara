@@ -59,3 +59,4 @@ class GuruSeeder extends Seeder
         }
     }
 }
+

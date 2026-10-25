@@ -43,3 +43,4 @@ class EvaluasiNonakademikSeeder extends Seeder
         }
     }
 }
+

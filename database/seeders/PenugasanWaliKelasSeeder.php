@@ -50,3 +50,4 @@ class PenugasanWaliKelasSeeder extends Seeder
         }
     }
 }
+

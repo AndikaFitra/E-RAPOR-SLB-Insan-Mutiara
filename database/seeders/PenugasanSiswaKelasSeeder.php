@@ -62,3 +62,4 @@ class PenugasanSiswaKelasSeeder extends Seeder
         }
     }
 }
+

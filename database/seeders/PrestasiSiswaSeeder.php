@@ -60,3 +60,4 @@ class PrestasiSiswaSeeder extends Seeder
         }
     }
 }
+

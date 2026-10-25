@@ -29,3 +29,4 @@ class TahunAjaranSeeder extends Seeder
         );
     }
 }
+

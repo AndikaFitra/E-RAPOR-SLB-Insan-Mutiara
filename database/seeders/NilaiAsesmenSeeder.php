@@ -148,3 +148,4 @@ class NilaiAsesmenSeeder extends Seeder
         }
     }
 }
+

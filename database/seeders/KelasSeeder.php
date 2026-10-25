@@ -39,3 +39,4 @@ class KelasSeeder extends Seeder
         }
     }
 }
+

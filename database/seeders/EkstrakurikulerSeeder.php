@@ -28,3 +28,4 @@ class EkstrakurikulerSeeder extends Seeder
         }
     }
 }
+

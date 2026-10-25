@@ -83,3 +83,4 @@ class EkstrakurikulerSiswaSeeder extends Seeder
         }
     }
 }
+

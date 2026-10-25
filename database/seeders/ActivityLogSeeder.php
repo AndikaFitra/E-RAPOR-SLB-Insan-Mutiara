@@ -58,3 +58,4 @@ class ActivityLogSeeder extends Seeder
         }
     }
 }
+

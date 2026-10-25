@@ -101,3 +101,4 @@ class OrangTuaSeeder extends Seeder
         }
     }
 }
+

@@ -42,3 +42,4 @@ class MataPelajaranSeeder extends Seeder
         }
     }
 }
+
