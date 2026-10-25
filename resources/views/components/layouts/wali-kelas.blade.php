@@ -20,23 +20,27 @@
     <!-- Styles & Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="h-full bg-[#F7F6F2] text-[#1A1A2E] antialiased flex">
+<body class="h-full bg-[#F7F6F2] text-[#1A1A2E] antialiased flex print:block print:bg-white print:m-0 print:p-0">
 
     <!-- Fixed Left Sidebar for Wali Kelas -->
-    <x-sidebar.wali-kelas />
+    <div class="print:hidden">
+        <x-sidebar.wali-kelas />
+    </div>
 
     <!-- Main Content Flow -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen print:min-h-0 print:block print:w-full">
         <!-- Top Sticky Header -->
-        <x-topbar :periode="$periode" :userName="$userName" />
+        <div class="print:hidden">
+            <x-topbar :periode="$periode" :userName="$userName" />
+        </div>
 
         <!-- Page Canvas Content -->
-        <main class="flex-1 px-8 py-7 overflow-y-auto">
-            <div class="max-w-[1360px] mx-auto space-y-6">
+        <main class="flex-1 px-8 py-7 overflow-y-auto print:p-0 print:m-0 print:overflow-visible print:w-full">
+            <div class="max-w-[1360px] mx-auto space-y-6 print:max-w-none print:m-0 print:p-0 print:space-y-0">
                 {{ $slot }}
 
                 <!-- Footer -->
-                <div class="pt-6 pb-4 text-left text-[12px] text-gray-400">
+                <div class="pt-6 pb-4 text-left text-[12px] text-gray-400 print:hidden">
                     SLB Insan Mutiara Pekanbaru • E-Rapor
                 </div>
             </div>

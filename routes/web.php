@@ -112,6 +112,7 @@ Route::middleware(['auth', 'role:kepala_sekolah'])->prefix('kepala-sekolah')->na
     Route::get('/dashboard', [KepalaDashboardController::class, 'index'])->name('dashboard');
     Route::get('/persetujuan', [KepalaPersetujuanController::class, 'index'])->name('persetujuan.index');
     Route::get('/persetujuan/{id}', [KepalaPersetujuanController::class, 'show'])->name('persetujuan.show');
+    Route::get('/persetujuan/{id}/cetak', [KepalaPersetujuanController::class, 'cetak'])->name('persetujuan.cetak');
     Route::post('/persetujuan/{id}/approve', [KepalaPersetujuanController::class, 'approve'])->name('persetujuan.approve');
     Route::post('/persetujuan/{id}/reject', [KepalaPersetujuanController::class, 'reject'])->name('persetujuan.reject');
     Route::get('/leger', [KepalaLegerController::class, 'index'])->name('leger.index');
@@ -127,6 +128,7 @@ Route::middleware(['auth', 'role:wali_kelas'])->prefix('wali-kelas')->name('wali
     Route::post('/evaluasi-nonakademik', [WaliNonakademikController::class, 'store'])->name('nonakademik.store');
     Route::get('/rapor-saya', [WaliRaporController::class, 'index'])->name('rapor.index');
     Route::get('/rapor-saya/{id}', [WaliRaporController::class, 'show'])->name('rapor.show');
+    Route::get('/rapor-saya/{id}/cetak', [WaliRaporController::class, 'cetak'])->name('rapor.cetak');
     Route::post('/rapor-saya/{id}/ajukan', [WaliRaporController::class, 'submit'])->name('rapor.submit');
     Route::get('/distribusi', [WaliDistribusiController::class, 'index'])->name('distribusi.index');
     Route::post('/distribusi/{id}/mark-sent', [WaliDistribusiController::class, 'markSent'])->name('distribusi.mark-sent');
