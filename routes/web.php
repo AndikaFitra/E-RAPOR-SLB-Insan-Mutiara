@@ -100,6 +100,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Akun & Hak Akses
     Route::get('/akun', [AkunController::class, 'index'])->name('akun.index');
+    Route::post('/akun', [AkunController::class, 'store'])->name('akun.store');
+    Route::delete('/akun/{id}', [AkunController::class, 'destroy'])->name('akun.destroy');
     Route::post('/akun/{id}/reset-password', [AkunController::class, 'resetPassword'])->name('akun.reset-password');
     Route::post('/akun/{id}/toggle-status', [AkunController::class, 'toggleStatus'])->name('akun.toggle-status');
 

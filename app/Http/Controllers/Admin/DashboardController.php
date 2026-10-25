@@ -3,7 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ActivityLog;
+use App\Models\Guru;
+use App\Models\Kelas;
+use App\Models\PenugasanWaliKelas;
+use App\Models\Rapor;
 use App\Models\Sekolah;
+use App\Models\Siswa;
 use App\Models\TahunAjaran;
 use Illuminate\View\View;
 
@@ -13,40 +19,66 @@ class DashboardController extends Controller
     {
         $tahunAktif = TahunAjaran::getAktif();
         $sekolah = Sekolah::instance();
+        $tahunId = optional($tahunAktif)->id;
 
-        // Stat cards matching design mockup
+        $totalSiswa = Siswa::count();
+        $siswaAktif = Siswa::where('is_aktif', true)->count();
+        $totalGuru = Guru::count();
+        $totalKelas = Kelas::count();
+        $waliDitugaskan = PenugasanWaliKelas::where('tahun_ajaran_id', $tahunId)->count();
+
+        $raporDisetujui = Rapor::where('tahun_ajaran_id', $tahunId)
+            ->where('status', Rapor::STATUS_DISETUJUI)
+            ->count();
+
+        $persenRapor = $totalSiswa > 0 ? round(($raporDisetujui / $totalSiswa) * 100) : 0;
+
+        $siswaBelumLengkap = Siswa::where(function ($q) {
+            $q->whereNull('nisn')
+              ->orWhere('nisn', '')
+              ->orWhereNull('tempat_lahir');
+        })->count();
+
+        // Stat cards
         $stats = [
-            'siswa_aktif'      => 48,
-            'kelas_campuran'   => '6 kelas campuran',
-            'guru_aktif'       => 12,
-            'wali_ditugaskan'  => '6 wali kelas ditugaskan',
-            'rapor_disetujui'  => '18 / 48',
-            'persen_rapor'     => '38% rapor semester ini',
-            'perlu_diperiksa'  => 3,
-            'status_periksa'   => 'Data dasar belum lengkap',
+            'siswa_aktif'      => $siswaAktif,
+            'kelas_campuran'   => "{$totalKelas} rombel (3 Ketunaan)",
+            'guru_aktif'       => $totalGuru,
+            'wali_ditugaskan'  => "{$waliDitugaskan} wali kelas ditugaskan",
+            'rapor_disetujui'  => "{$raporDisetujui} / {$totalSiswa}",
+            'persen_rapor'     => "{$persenRapor}% rapor disetujui",
+            'perlu_diperiksa'  => $siswaBelumLengkap,
+            'status_periksa'   => $siswaBelumLengkap > 0 ? "{$siswaBelumLengkap} siswa perlu dicek" : 'Semua data dasar lengkap',
         ];
 
         // Yang perlu ditindaklanjuti
-        $tindakLanjut = [
-            [
-                'title'       => 'Lengkapi identitas 2 siswa',
-                'subtitle'    => 'NISN dan data orang tua masih belum lengkap.',
+        $tindakLanjut = [];
+        if ($siswaBelumLengkap > 0) {
+            $tindakLanjut[] = [
+                'title'       => "Lengkapi identitas {$siswaBelumLengkap} siswa",
+                'subtitle'    => 'Data dasar seperti NISN atau tempat lahir perlu dilengkapi.',
                 'button_text' => 'Buka Data Siswa',
-                'button_href' => route('admin.siswa.index', ['status' => 'belum_lengkap']),
-            ],
-            [
-                'title'       => 'Tugaskan wali kelas Tunagrahita B',
-                'subtitle'    => 'Kelas belum memiliki wali pada semester aktif.',
+                'button_href' => route('admin.siswa.index'),
+            ];
+        }
+
+        if ($waliDitugaskan < $totalKelas) {
+            $tindakLanjut[] = [
+                'title'       => 'Tugaskan wali kelas rombel',
+                'subtitle'    => ($totalKelas - $waliDitugaskan) . ' kelas belum memiliki penugasan wali semester aktif.',
                 'button_text' => 'Buka Penugasan',
                 'button_href' => route('admin.penugasan.index'),
-            ],
-            [
-                'title'       => 'Periksa 1 nomor WhatsApp',
-                'subtitle'    => 'Nomor kontak perlu dikonfirmasi kepada wali.',
-                'button_text' => 'Periksa Kontak',
-                'button_href' => route('admin.orang-tua.index'),
-            ],
-        ];
+            ];
+        }
+
+        if (empty($tindakLanjut)) {
+            $tindakLanjut[] = [
+                'title'       => 'Seluruh data operasional lengkap',
+                'subtitle'    => 'Data rombel, siswa, dan wali kelas telah terkonfigurasi dengan baik.',
+                'button_text' => 'Lihat Penugasan',
+                'button_href' => route('admin.penugasan.index'),
+            ];
+        }
 
         // Aksi Cepat
         $aksiCepat = [
@@ -68,26 +100,16 @@ class DashboardController extends Controller
         ];
 
         // Aktivitas Terbaru
-        $aktivitasTerbaru = [
-            [
-                'waktu'     => 'Hari ini, 09.20',
-                'aktivitas' => 'Rapor Alya Putri diajukan untuk ditinjau',
-                'oleh'      => 'Rina Pratiwi',
-                'status'    => 'Diajukan',
-            ],
-            [
-                'waktu'     => 'Hari ini, 08.45',
-                'aktivitas' => 'Data kelas Tunarungu A diperbarui',
-                'oleh'      => 'Admin Sekolah',
-                'status'    => 'Aktif',
-            ],
-            [
-                'waktu'     => '4 Okt, 14.10',
-                'aktivitas' => 'Rapor Bima Pratama telah disetujui',
-                'oleh'      => 'Novia Parenri',
-                'status'    => 'Disetujui',
-            ],
-        ];
+        $dbLogs = ActivityLog::latest()->take(4)->get();
+        $aktivitasTerbaru = [];
+        foreach ($dbLogs as $log) {
+            $aktivitasTerbaru[] = [
+                'waktu'     => $log->created_at ? $log->created_at->diffForHumans() : 'Baru saja',
+                'aktivitas' => $log->deskripsi,
+                'oleh'      => $log->user?->name ?? 'Admin Sistem',
+                'status'    => $log->status ?? 'Sukses',
+            ];
+        }
 
         return view('admin.dashboard', compact(
             'tahunAktif',

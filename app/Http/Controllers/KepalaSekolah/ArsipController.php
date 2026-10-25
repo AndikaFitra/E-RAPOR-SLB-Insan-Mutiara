@@ -42,7 +42,11 @@ class ArsipController extends Controller
         }
 
         if ($statusSiswa) {
-            $query->where('status', $statusSiswa);
+            if ($statusSiswa === 'Aktif') {
+                $query->where('is_aktif', true);
+            } else {
+                $query->where('is_aktif', false);
+            }
         }
 
         $siswaModels = $query->get();
@@ -68,7 +72,7 @@ class ArsipController extends Controller
                         'periode'      => ($th?->tahun ?? '2026/2027') . ' · ' . ($th?->semester ?? 'Ganjil'),
                         'kelas'        => ($penugasan?->kelas?->nama ?? $s->kekhususan),
                         'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D'),
-                        'status'       => $s->status ?? 'Aktif',
+                        'status'       => $s->is_aktif ? 'Aktif' : 'Non-aktif',
                         'status_rapor' => ucfirst($r->status),
                     ];
                 }
@@ -82,7 +86,7 @@ class ArsipController extends Controller
                     'periode'      => ($tahunAktif?->tahun ?? '2026/2027') . ' · ' . ($tahunAktif?->semester ?? 'Ganjil'),
                     'kelas'        => ($penugasan?->kelas?->nama ?? $s->kekhususan),
                     'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D'),
-                    'status'       => $s->status ?? 'Aktif',
+                    'status'       => $s->is_aktif ? 'Aktif' : 'Non-aktif',
                     'status_rapor' => 'Draft',
                 ];
             }

@@ -9,86 +9,256 @@
         <div class="mb-6">
             <x-alert-banner type="success" title="Operasi Berhasil" :message="session('success')" />
         </div>
+    @elseif(session('error'))
+        <div class="mb-6">
+            <x-alert-banner type="error" title="Gagal" :message="session('error')" />
+        </div>
     @endif
 
-    <!-- Page Header -->
-    <x-page-header
-        breadcrumb="Admin / Akun & Hak Akses"
-        title="Akun & Hak Akses"
-        subtitle="Kelola kredensial login, peran pengguna (Admin, Kepala Sekolah, Wali Kelas), dan status aktivasi.">
-        <x-slot:action>
-            <a href="{{ route('admin.guru.create') }}"
-               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#555783] hover:bg-[#47496E] text-white text-[14px] font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
-                </svg>
-                <span>Tambah Akun / Guru</span>
-            </a>
-        </x-slot:action>
-    </x-page-header>
+    <div x-data="{
+        showCreateModal: false,
+        deleteModal: false,
+        deleteAction: '',
+        deleteName: '',
+        openDelete(id, name) {
+            this.deleteAction = '{{ url('admin/akun') }}/' + id;
+            this.deleteName = name;
+            this.deleteModal = true;
+        }
+    }">
 
-    <!-- Table of Users -->
-    <x-card class="mb-6">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-[#F7F6F2] text-[#1A1A2E] text-[13px] font-semibold">
-                        <th class="py-3 px-4 rounded-l-lg font-semibold">Nama pengguna</th>
-                        <th class="py-3 px-4 font-semibold">Username / Email</th>
-                        <th class="py-3 px-4 font-semibold">Hak akses (Role)</th>
-                        <th class="py-3 px-4 font-semibold">Login terakhir</th>
-                        <th class="py-3 px-4 font-semibold">Status</th>
-                        <th class="py-3 px-4 rounded-r-lg font-semibold text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100 text-[13px]">
-                    @foreach($akunList as $u)
-                        <tr class="hover:bg-gray-50/40 transition-colors">
-                            <td class="py-4.5 px-4 font-semibold text-[#1A1A2E] whitespace-nowrap">
-                                {{ $u['name'] }}
-                            </td>
-                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
-                                <span class="font-medium text-gray-800">{{ $u['username'] }}</span> · {{ $u['email'] }}
-                            </td>
-                            <td class="py-4.5 px-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $u['role'] === 'Admin' ? 'bg-purple-50 text-purple-700' : ($u['role'] === 'Kepala Sekolah' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700') }}">
-                                    {{ $u['role'] }}
-                                </span>
-                            </td>
-                            <td class="py-4.5 px-4 text-gray-500 whitespace-nowrap text-xs">
-                                {{ $u['last_login'] }}
-                            </td>
-                            <td class="py-4.5 px-4 whitespace-nowrap font-medium {{ $u['status'] === 'Aktif' ? 'text-[#16A34A]' : 'text-rose-600' }}">
-                                {{ $u['status'] }}
-                            </td>
-                            <td class="py-4.5 px-4 whitespace-nowrap text-right text-gray-500">
-                                <div class="flex items-center justify-end gap-2 text-[13px]">
+        <!-- Page Header -->
+        <x-page-header
+            breadcrumb="Admin / Akun & Hak Akses"
+            title="Akun & Hak Akses"
+            subtitle="Kelola kredensial login, peran pengguna (Admin, Kepala Sekolah, Wali Kelas), dan status aktivasi.">
+            <x-slot:action>
+                <button
+                    type="button"
+                    @click="showCreateModal = true"
+                    class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#555783] hover:bg-[#47496E] text-white text-[14px] font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
+                >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                    </svg>
+                    <span>Tambah Akun Baru</span>
+                </button>
+            </x-slot:action>
+        </x-page-header>
+
+        <!-- Filter Card -->
+        <x-card class="p-5 mb-6 space-y-4">
+            <form method="GET" action="{{ route('admin.akun.index') }}" class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div class="relative flex-1 w-full">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35"/>
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request('search') }}"
+                        placeholder="Cari nama atau email akun..."
+                        class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-[#1A1A2E] placeholder-gray-400 focus:outline-none focus:border-[#555783]"
+                    />
+                </div>
+
+                <div class="flex items-center gap-3 w-full sm:w-auto">
+                    <select name="role" onchange="this.form.submit()" class="px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-xs text-[#1A1A2E] focus:outline-none focus:border-[#555783]">
+                        <option value="">Role: Semua</option>
+                        <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="kepala_sekolah" {{ request('role') === 'kepala_sekolah' ? 'selected' : '' }}>Kepala Sekolah</option>
+                        <option value="wali_kelas" {{ request('role') === 'wali_kelas' ? 'selected' : '' }}>Wali Kelas</option>
+                    </select>
+
+                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-[#555783] text-white text-xs font-semibold hover:bg-[#46486E] transition-colors shadow-xs">
+                        Cari
+                    </button>
+
+                    @if(request('search') || request('role'))
+                        <a href="{{ route('admin.akun.index') }}" class="px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-700 bg-white hover:bg-[#F7F6F2] transition-colors flex items-center gap-2">
+                            Reset
+                        </a>
+                    @endif
+                </div>
+            </form>
+        </x-card>
+
+        <!-- Table of Users -->
+        <x-card class="mb-6 p-0 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-[#F7F6F2] text-[#1A1A2E] font-semibold border-b border-[#E8E7ED]">
+                            <th class="py-3.5 px-6">Nama pengguna</th>
+                            <th class="py-3.5 px-4">Username / Email</th>
+                            <th class="py-3.5 px-4">Hak akses (Role)</th>
+                            <th class="py-3.5 px-4">Guru Terhubung</th>
+                            <th class="py-3.5 px-4">Status</th>
+                            <th class="py-3.5 px-6 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($akunList as $u)
+                            <tr class="hover:bg-[#FBFBFA] transition-colors">
+                                <td class="py-4 px-6 font-bold text-[#1A1A2E]">
+                                    {{ $u['name'] }}
+                                </td>
+                                <td class="py-4 px-4 text-gray-600">
+                                    <span class="font-medium text-gray-800">{{ $u['username'] }}</span> · {{ $u['email'] }}
+                                </td>
+                                <td class="py-4 px-4">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $u['role'] === 'Admin' ? 'bg-purple-50 text-purple-700' : ($u['role'] === 'Kepala Sekolah' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700') }}">
+                                        {{ $u['role'] }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-4 text-gray-600">
+                                    {{ $u['guru'] ?: '—' }}
+                                </td>
+                                <td class="py-4 px-4 font-semibold {{ $u['status'] === 'Aktif' ? 'text-[#16A34A]' : 'text-rose-600' }}">
+                                    <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold {{ $u['status'] === 'Aktif' ? 'bg-emerald-50 text-[#16A34A]' : 'bg-rose-50 text-rose-600' }}">
+                                        {{ $u['status'] }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-6 text-right space-x-2">
                                     <form method="POST" action="{{ route('admin.akun.toggle-status', $u['id']) }}" class="inline">
                                         @csrf
-                                        <button type="submit" class="text-gray-700 hover:text-[#555783] font-medium transition-colors cursor-pointer">
+                                        <button type="submit" class="text-gray-700 hover:text-[#555783] font-semibold text-xs transition-colors cursor-pointer">
                                             {{ $u['status'] === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
                                         </button>
                                     </form>
-                                    <span class="text-gray-300">/</span>
-                                    <form method="POST" action="{{ route('admin.akun.reset-password', $u['id']) }}" class="inline" onsubmit="return confirm('Reset password akun {{ $u['email'] }} menjadi default?')">
+                                    <span class="text-gray-300">·</span>
+                                    <form method="POST" action="{{ route('admin.akun.reset-password', $u['id']) }}" class="inline" onsubmit="return confirm('Reset password akun {{ $u['email'] }} menjadi \'password\'?')">
                                         @csrf
-                                        <button type="submit" class="text-rose-600 hover:text-rose-800 font-medium transition-colors cursor-pointer">
-                                            Reset Password
+                                        <button type="submit" class="text-amber-700 hover:text-amber-900 font-semibold text-xs transition-colors cursor-pointer">
+                                            Reset
                                         </button>
                                     </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                                    @if($u['id'] !== auth()->id())
+                                        <span class="text-gray-300">·</span>
+                                        <button
+                                            type="button"
+                                            @click="openDelete({{ $u['id'] }}, '{{ addslashes($u['email']) }}')"
+                                            class="text-rose-600 hover:text-rose-800 font-semibold text-xs transition-colors cursor-pointer"
+                                        >
+                                            Hapus
+                                        </button>
+                                    @endif
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="py-8 text-center text-gray-400">
+                                    Tidak ada data akun yang cocok dengan filter.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            <x-pagination :current="1" :total="1" :totalItems="count($akunList)" :perPage="10" />
+        </x-card>
+
+        <!-- Modal Tambah Akun Baru -->
+        <div
+            x-show="showCreateModal"
+            style="display: none;"
+            class="fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-xs flex items-center justify-center p-4"
+            @keydown.escape.window="showCreateModal = false"
+        >
+            <div
+                @click.away="showCreateModal = false"
+                class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-xl border border-[#E8E7ED] space-y-4"
+            >
+                <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <h3 class="text-base font-bold text-[#1A1A2E]">Tambah Akun Pengguna Baru</h3>
+                    <button type="button" @click="showCreateModal = false" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <form method="POST" action="{{ route('admin.akun.store') }}" class="space-y-4 text-xs">
+                    @csrf
+
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1.5">Nama Lengkap *</label>
+                        <input
+                            type="text"
+                            name="name"
+                            required
+                            placeholder="Contoh: Rina Pratiwi, S.Pd."
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1.5">Email / Username *</label>
+                        <input
+                            type="email"
+                            name="email"
+                            required
+                            placeholder="nama@slbinsanmutiara.sch.id"
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]"
+                        />
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1.5">Password *</label>
+                        <input
+                            type="password"
+                            name="password"
+                            required
+                            minlength="6"
+                            placeholder="Minimal 6 karakter"
+                            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]"
+                        />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-semibold text-gray-700 mb-1.5">Role / Peran *</label>
+                            <select name="role" required class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]">
+                                <option value="wali_kelas">Wali Kelas</option>
+                                <option value="kepala_sekolah">Kepala Sekolah</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-700 mb-1.5">Hubungkan ke Data Guru</label>
+                            <select name="guru_id" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]">
+                                <option value="">— Tidak terhubung —</option>
+                                @foreach($guruList as $g)
+                                    <option value="{{ $g->id }}">{{ $g->nama_lengkap }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
+                        <button type="button" @click="showCreateModal = false" class="px-4 py-2.5 rounded-xl border border-gray-200 font-semibold text-gray-700 hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#555783] hover:bg-[#46486E] text-white font-bold shadow-xs transition-colors">
+                            Simpan Akun
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
 
-        <x-pagination :total="count($akunList)" :count="count($akunList)" :perPage="10" />
-    </x-card>
+        <!-- 2-Step Verification Delete Modal -->
+        <x-modal.confirm-delete
+            title="Hapus Akun Pengguna"
+            message="Apakah Anda yakin ingin menghapus akun pengguna ini? Pengguna tidak akan dapat login lagi ke sistem e-rapor."
+        />
+
+    </div>
 
     <x-callout-note
         title="Keamanan Akses Multi-Peran SLB Insan Mutiara"
-        subtitle="Wali kelas hanya dapat menginput nilai untuk kelas yang ditugaskan. Kepala sekolah (Novia Parenri, S.Si, M.Si) memiliki hak review, persetujuan rapor resmi, dan export leger WhatsApp." />
+        description="Wali kelas hanya dapat menginput nilai untuk kelas yang ditugaskan. Kepala sekolah memiliki hak review, persetujuan rapor resmi, dan export leger WhatsApp." />
 
 </x-layouts.admin>
