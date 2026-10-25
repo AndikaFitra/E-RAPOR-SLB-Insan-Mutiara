@@ -35,11 +35,41 @@ class RaporSayaController extends Controller
     {
         $tahunAktif = TahunAjaran::getAktif();
         $sekolah = Sekolah::instance();
-        $siswa = Siswa::with(['penugasanKelas.kelas', 'orangTua', 'prestasi', 'rapor'])->find($id) 
-                 ?? Siswa::first();
+        $siswa = Siswa::with([
+            'penugasanKelas.kelas',
+            'orangTua',
+            'prestasi' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id),
+            'rapor' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id)->with('waliKelas'),
+            'nilaiAsesmen' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id)->with('mataPelajaran'),
+            'evaluasiNonakademik' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id),
+            'ekstrakurikuler' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id)->with('ekstrakurikuler'),
+        ])->find($id) ?? Siswa::first();
+
         $rapor = $siswa?->rapor()->where('tahun_ajaran_id', optional($tahunAktif)->id)->first();
 
         return view('wali_kelas.rapor.show', compact('tahunAktif', 'sekolah', 'siswa', 'id', 'rapor'));
+    }
+
+    /**
+     * Tampilan cetak bersih rapor gabungan (Siap cetak ke PDF tanpa dashboard chrome).
+     */
+    public function cetak($id): View
+    {
+        $tahunAktif = TahunAjaran::getAktif();
+        $sekolah = Sekolah::instance();
+        $siswa = Siswa::with([
+            'penugasanKelas.kelas',
+            'orangTua',
+            'prestasi' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id),
+            'rapor' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id)->with('waliKelas'),
+            'nilaiAsesmen' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id)->with('mataPelajaran'),
+            'evaluasiNonakademik' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id),
+            'ekstrakurikuler' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id)->with('ekstrakurikuler'),
+        ])->findOrFail($id);
+
+        $rapor = $siswa->rapor()->where('tahun_ajaran_id', optional($tahunAktif)->id)->first();
+
+        return view('wali_kelas.rapor.cetak', compact('tahunAktif', 'sekolah', 'siswa', 'id', 'rapor'));
     }
 
     /**

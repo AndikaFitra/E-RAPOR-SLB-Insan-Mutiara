@@ -71,6 +71,22 @@ class PersetujuanController extends Controller
         return view('kepala_sekolah.persetujuan.show', compact('tahunAktif', 'sekolah', 'id', 'siswa', 'rapor'));
     }
 
+    public function cetak(int $id): View
+    {
+        $tahunAktif = TahunAjaran::getAktif();
+        $sekolah = Sekolah::instance();
+
+        $rapor = Rapor::with(['siswa.penugasanKelas.kelas', 'waliKelas'])->find($id);
+        if ($rapor) {
+            $siswa = $rapor->siswa;
+        } else {
+            $siswa = Siswa::with(['penugasanKelas.kelas', 'rapor'])->findOrFail($id);
+            $rapor = $siswa->rapor()->latest()->first();
+        }
+
+        return view('wali_kelas.rapor.cetak', compact('tahunAktif', 'sekolah', 'id', 'siswa', 'rapor'));
+    }
+
     public function approve(Request $request, int $id): RedirectResponse
     {
         $rapor = Rapor::find($id);
