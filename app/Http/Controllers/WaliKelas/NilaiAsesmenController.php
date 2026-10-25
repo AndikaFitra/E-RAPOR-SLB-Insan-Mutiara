@@ -4,6 +4,7 @@ namespace App\Http\Controllers\WaliKelas;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Kelas;
 use App\Models\MataPelajaran;
 use App\Models\NilaiAsesmen;
 use App\Models\Sekolah;
@@ -19,30 +20,87 @@ class NilaiAsesmenController extends Controller
     {
         $tahunAktif = TahunAjaran::getAktif();
         $sekolah = Sekolah::instance();
-        $siswaList = Siswa::where('kekhususan', 'Tunarungu')->get();
+        $kelasList = Kelas::all();
 
-        $listAsesmen = [
-            ['id' => 1, 'kode' => 'PABP', 'mapel' => 'Pendidikan Agama dan Budi Pekerti', 'tingkat' => 'VII–IX / D', 'nilai' => '6 / 6', 'narasi' => '6 / 6', 'status' => 'Lengkap'],
-            ['id' => 2, 'kode' => 'PPKN', 'mapel' => 'Pendidikan Pancasila', 'tingkat' => 'VII–IX / D', 'nilai' => '6 / 6', 'narasi' => '6 / 6', 'status' => 'Lengkap'],
-            ['id' => 3, 'kode' => 'BIND', 'mapel' => 'Bahasa Indonesia', 'tingkat' => 'VII–IX / D', 'nilai' => '6 / 6', 'narasi' => '6 / 6', 'status' => 'Lengkap'],
-            ['id' => 4, 'kode' => 'MTK', 'mapel' => 'Matematika', 'tingkat' => 'VII–IX / D', 'nilai' => '6 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 5, 'kode' => 'BING', 'mapel' => 'Bahasa Inggris', 'tingkat' => 'VII–IX / D', 'nilai' => '6 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 6, 'kode' => 'IPA', 'mapel' => 'IPA', 'tingkat' => 'VII–IX / D', 'nilai' => '5 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 7, 'kode' => 'IPS', 'mapel' => 'IPS', 'tingkat' => 'VII–IX / D', 'nilai' => '5 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 8, 'kode' => 'SBR', 'mapel' => 'Seni Budaya · Seni Rupa', 'tingkat' => 'VII–IX / D', 'nilai' => '5 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 9, 'kode' => 'PJOK', 'mapel' => 'PJOK', 'tingkat' => 'VII–IX / D', 'nilai' => '5 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 10, 'kode' => 'K-SUV', 'mapel' => 'Keterampilan Pilihan · Suvenir', 'tingkat' => 'VII–IX / D', 'nilai' => '5 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 11, 'kode' => 'K-TKC', 'mapel' => 'Keterampilan Pilihan · Tata Kecantikan', 'tingkat' => 'VII–IX / D', 'nilai' => '5 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-            ['id' => 12, 'kode' => 'PKPBI', 'mapel' => 'Program Kekhususan · PKPBI (Tunarungu)', 'tingkat' => 'VII–IX / D', 'nilai' => '6 / 6', 'narasi' => '6 / 6', 'status' => 'Lengkap'],
-            ['id' => 13, 'kode' => 'BMR', 'mapel' => 'Muatan Lokal · Budaya Melayu Riau', 'tingkat' => 'VII–IX / D', 'nilai' => '5 / 6', 'narasi' => '5 / 6', 'status' => 'Belum lengkap'],
-        ];
+        $search = $request->query('search');
+        $kelasId = $request->query('kelas_id');
+        $selectedKelas = $kelasId ? Kelas::find($kelasId) : Kelas::where('kekhususan', 'Tunarungu')->first();
+        
+        $kekhususan = $selectedKelas ? $selectedKelas->kekhususan : 'Tunarungu';
 
-        return view('wali_kelas.asesmen.index', compact('tahunAktif', 'sekolah', 'listAsesmen', 'siswaList'));
+        // Siswa di kelas / kekhususan ini
+        $siswaList = Siswa::where('kekhususan', $kekhususan)->get();
+        $siswaIds = $siswaList->pluck('id')->toArray();
+        $totalSiswa = count($siswaIds);
+
+        // Mapel yang relevan
+        $mapelQuery = MataPelajaran::where('is_aktif', true);
+
+        // Filter kekhususan: sembunyikan program kekhususan yang tidak sesuai
+        if ($kekhususan === 'Tunarungu') {
+            $mapelQuery->whereNotIn('kode', ['BINADIRI', 'PKISP']);
+        } elseif ($kekhususan === 'Tunagrahita') {
+            $mapelQuery->whereNotIn('kode', ['PKPBI', 'PKISP']);
+        } elseif ($kekhususan === 'Autis') {
+            $mapelQuery->whereNotIn('kode', ['PKPBI', 'BINADIRI']);
+        }
+
+        if ($search) {
+            $mapelQuery->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('kode', 'like', "%{$search}%");
+            });
+        }
+
+        $allMapel = $mapelQuery->get();
+
+        // Ambil semua nilai asesmen siswa kelas ini
+        $nilaiDb = NilaiAsesmen::whereIn('siswa_id', $siswaIds)
+            ->where('tahun_ajaran_id', optional($tahunAktif)->id)
+            ->get();
+
+        $existingScores = [];
+        foreach ($nilaiDb as $n) {
+            $existingScores[$n->mata_pelajaran_id][$n->siswa_id] = [
+                'nilai_akhir'    => $n->nilai_akhir,
+                'narasi_capaian' => $n->narasi_capaian,
+            ];
+        }
+
+        $listAsesmen = [];
+        foreach ($allMapel as $m) {
+            $nilaiCount = $nilaiDb->where('mata_pelajaran_id', $m->id)->whereNotNull('nilai_akhir')->count();
+            $narasiCount = $nilaiDb->where('mata_pelajaran_id', $m->id)->filter(fn($row) => !empty(trim((string)$row->narasi_capaian)))->count();
+
+            $isLengkap = ($totalSiswa > 0 && $nilaiCount >= $totalSiswa && $narasiCount >= $totalSiswa);
+
+            $listAsesmen[] = [
+                'id'       => $m->id,
+                'kode'     => $m->kode,
+                'mapel'    => $m->nama,
+                'tingkat'  => 'VII–IX / D',
+                'nilai'    => "{$nilaiCount} / {$totalSiswa}",
+                'narasi'   => "{$narasiCount} / {$totalSiswa}",
+                'status'   => $isLengkap ? 'Lengkap' : 'Belum lengkap',
+            ];
+        }
+
+        return view('wali_kelas.asesmen.index', compact(
+            'tahunAktif',
+            'sekolah',
+            'listAsesmen',
+            'siswaList',
+            'kelasList',
+            'selectedKelas',
+            'search',
+            'existingScores'
+        ));
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'mapel_id'       => 'nullable|exists:mata_pelajaran,id',
             'mapel_nama'     => 'required|string',
             'siswa_id'       => 'required|exists:siswa,id',
             'nilai_akhir'    => 'required|numeric|min:0|max:100',
@@ -50,8 +108,15 @@ class NilaiAsesmenController extends Controller
         ]);
 
         $tahunAktif = TahunAjaran::getAktif();
-        $mapel = MataPelajaran::firstWhere('nama', 'like', "%{$validated['mapel_nama']}%")
-                 ?? MataPelajaran::first();
+
+        $mapel = null;
+        if (!empty($validated['mapel_id'])) {
+            $mapel = MataPelajaran::find($validated['mapel_id']);
+        }
+        if (!$mapel) {
+            $mapel = MataPelajaran::firstWhere('nama', 'like', "%{$validated['mapel_nama']}%")
+                     ?? MataPelajaran::first();
+        }
 
         if ($mapel) {
             NilaiAsesmen::updateOrCreate(
@@ -71,6 +136,6 @@ class NilaiAsesmenController extends Controller
         ActivityLog::log('Input nilai asesmen: ' . $validated['mapel_nama'] . ' untuk ' . ($siswa?->nama_lengkap ?? 'Siswa'), null, 'Sukses');
 
         return redirect()->route('wali.asesmen.index')
-            ->with('success', 'Penilaian mata pelajaran ' . $validated['mapel_nama'] . ' berhasil disimpan.');
+            ->with('success', 'Penilaian mata pelajaran ' . $validated['mapel_nama'] . ' untuk ' . ($siswa?->nama_lengkap ?? 'Siswa') . ' berhasil disimpan.');
     }
 }

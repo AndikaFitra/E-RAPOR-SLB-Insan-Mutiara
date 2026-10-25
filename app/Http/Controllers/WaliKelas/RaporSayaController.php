@@ -4,6 +4,8 @@ namespace App\Http\Controllers\WaliKelas;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Guru;
+use App\Models\Kelas;
 use App\Models\Rapor;
 use App\Models\Sekolah;
 use App\Models\Siswa;
@@ -21,11 +23,72 @@ class RaporSayaController extends Controller
     {
         $tahunAktif = TahunAjaran::getAktif();
         $sekolah = Sekolah::instance();
-        $siswaList = Siswa::with(['penugasanKelas.kelas', 'rapor' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id)])
-            ->orderBy('id')
-            ->get();
+        $kelasList = Kelas::all();
 
-        return view('wali_kelas.rapor.index', compact('tahunAktif', 'sekolah', 'siswaList'));
+        $search = $request->query('search');
+        $statusFilter = $request->query('status');
+        $kelasId = $request->query('kelas_id');
+
+        $query = Siswa::with([
+            'penugasanKelas.kelas',
+            'rapor' => fn($q) => $q->where('tahun_ajaran_id', optional($tahunAktif)->id),
+        ]);
+
+        if ($kelasId) {
+            $selectedKelas = Kelas::find($kelasId);
+            if ($selectedKelas) {
+                $query->where('kekhususan', $selectedKelas->kekhususan);
+            }
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                  ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        }
+
+        $allSiswa = $query->orderBy('id')->get();
+
+        // Hitung count status untuk quick filter badges
+        $counts = [
+            'total'        => 0,
+            'draft'        => 0,
+            'diajukan'     => 0,
+            'dikembalikan' => 0,
+            'disetujui'    => 0,
+        ];
+
+        foreach ($allSiswa as $s) {
+            $counts['total']++;
+            $status = strtolower($s->rapor->first()?->status ?? 'draft');
+            if (isset($counts[$status])) {
+                $counts[$status]++;
+            } else {
+                $counts['draft']++;
+            }
+        }
+
+        // Terapkan filter status jika dipilih
+        if ($statusFilter && in_array(strtolower($statusFilter), ['draft', 'diajukan', 'dikembalikan', 'disetujui'])) {
+            $siswaList = $allSiswa->filter(function ($s) use ($statusFilter) {
+                $currentStatus = strtolower($s->rapor->first()?->status ?? 'draft');
+                return $currentStatus === strtolower($statusFilter);
+            });
+        } else {
+            $siswaList = $allSiswa;
+        }
+
+        return view('wali_kelas.rapor.index', compact(
+            'tahunAktif',
+            'sekolah',
+            'siswaList',
+            'kelasList',
+            'kelasId',
+            'search',
+            'statusFilter',
+            'counts'
+        ));
     }
 
     /**
@@ -80,7 +143,7 @@ class RaporSayaController extends Controller
         $tahunAktif = TahunAjaran::getAktif();
         $siswa = Siswa::findOrFail($id);
 
-        $guru = auth()->user()->guru ?? Guru::first();
+        $guru = auth()->user()?->guru ?? Guru::first();
         $rapor = Rapor::updateOrCreate(
             [
                 'siswa_id'        => $siswa->id,
