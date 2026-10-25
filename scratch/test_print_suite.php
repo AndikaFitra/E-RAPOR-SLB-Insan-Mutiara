@@ -26,9 +26,9 @@ $response3 = app()->handle(Illuminate\Http\Request::create('/kepala-sekolah/pers
 echo "GET /kepala-sekolah/persetujuan/{$siswa->id}/cetak -> Status: " . $response3->getStatusCode() . PHP_EOL;
 
 $content = $response2->getContent();
-$hasCover = str_contains($content, 'LAPORAN') && str_contains($content, 'JENIS KEKHUSUSAN');
-$hasPetunjuk = str_contains($content, 'PETUNJUK PENGISIAN RAPOR');
-$hasBiodata = str_contains($content, 'KETERANGAN DIRI PESERTA DIDIK');
+$hasCover = str_contains($content, 'LAPORAN HASIL BELAJAR') && str_contains($content, 'SLB INSAN MUTIARA PEKANBARU');
+$hasPetunjuk = str_contains($content, 'IDENTITAS SEKOLAH');
+$hasBiodata = str_contains($content, 'IDENTITAS PESERTA DIDIK');
 $hasNilai = str_contains($content, 'Capaian Kompetensi') && str_contains($content, 'Program Kekhususan');
 $hasPengesahan = (stripos($content, 'Novia Parenri') !== false || stripos($content, 'NOVIA PARENRI') !== false) && stripos($content, 'Wali Kelas') !== false;
 
