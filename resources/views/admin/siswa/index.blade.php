@@ -1,0 +1,199 @@
+<x-layouts.admin
+    title="Admin · Data Siswa"
+    periode="2026/2027 · Semester Ganjil"
+    status="Aktif"
+    userName="Admin Sekolah">
+
+    <!-- Page Header -->
+    <x-page-header
+        breadcrumb="Admin / Data Siswa"
+        title="Data Siswa"
+        subtitle="Kelola identitas, kelas campuran, dan riwayat akademik setiap siswa.">
+        <x-slot:action>
+            <a href="{{ route('admin.siswa.create') }}"
+               class="inline-flex items-center gap-2 px-5 py-2.5 bg-[#555783] hover:bg-[#47496E] text-white text-[14px] font-semibold rounded-xl shadow-sm transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                <span>Tambah Siswa</span>
+            </a>
+        </x-slot:action>
+    </x-page-header>
+
+    <!-- Success Alert Banner if present or tested via ?notif=sukses -->
+    @if(session('success') || request('notif') === 'sukses')
+        <x-alert-banner
+            type="success"
+            title="Data siswa berhasil disimpan."
+            description="{{ session('success') ?? 'Hubungan orang tua/wali dapat ditetapkan nanti.' }}"
+            class="mb-6"
+        />
+    @endif
+
+    <!-- Filter Card -->
+    <x-card class="mb-6">
+        <form method="GET" action="{{ route('admin.siswa.index') }}" class="space-y-4">
+            <!-- Search & Reset -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="relative flex-1 max-w-lg">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <input type="text"
+                           name="search"
+                           value="{{ request('search') }}"
+                           placeholder="Cari nama atau nomor identitas"
+                           class="w-full pl-10 pr-4 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-[#1A1A2E] placeholder-gray-400 focus:outline-none focus:border-[#555783] transition-colors" />
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <span class="text-[13px] text-gray-500 hidden sm:inline">Filter lanjutan</span>
+                    <a href="{{ route('admin.siswa.index') }}" class="inline-flex items-center gap-1.5 px-4 py-2 border border-[#D5D7E2] rounded-xl text-[13px] font-medium text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        <span>Reset filter</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Filter Dropdowns Row -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+                <div>
+                    <select name="tahun" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
+                        <option value="">Tahun: 2026/2027</option>
+                        <option value="2025/2026">Tahun: 2025/2026</option>
+                    </select>
+                </div>
+                <div>
+                    <select name="kelas_id" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
+                        <option value="">Kelas: Semua</option>
+                        @foreach($kelasList as $k)
+                            <option value="{{ $k->id }}" {{ request('kelas_id') == $k->id ? 'selected' : '' }}>
+                                {{ $k->nama }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <select name="kekhususan" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
+                        <option value="">Kekhususan: Semua</option>
+                        <option value="Tunarungu" {{ request('kekhususan') === 'Tunarungu' ? 'selected' : '' }}>Tunarungu (PKPBI)</option>
+                        <option value="Tunagrahita" {{ request('kekhususan') === 'Tunagrahita' ? 'selected' : '' }}>Tunagrahita (Bina Diri)</option>
+                        <option value="Autis" {{ request('kekhususan') === 'Autis' ? 'selected' : '' }}>Autis (Pengembangan Komunikasi)</option>
+                    </select>
+                </div>
+                <div>
+                    <select name="tingkat" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
+                        <option value="">Tingkat: Semua</option>
+                        <option value="D">Fase D (SMPLB)</option>
+                        <option value="E">Fase E (SMALB)</option>
+                    </select>
+                </div>
+                <div>
+                    <select name="status" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
+                        <option value="">Status: Semua</option>
+                        <option value="Aktif">Aktif</option>
+                        <option value="Pindah">Pindah</option>
+                        <option value="Lulus">Lulus</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </x-card>
+
+    <!-- Table of Siswa -->
+    <x-card class="mb-6">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-[#F7F6F2] text-[#1A1A2E] text-[13px] font-semibold">
+                        <th class="py-3 px-4 rounded-l-lg font-semibold">Nama siswa</th>
+                        <th class="py-3 px-4 font-semibold">NIS / NISN</th>
+                        <th class="py-3 px-4 font-semibold">Kelas</th>
+                        <th class="py-3 px-4 font-semibold">Tingkat · Fase</th>
+                        <th class="py-3 px-4 font-semibold">Kekhususan</th>
+                        <th class="py-3 px-4 font-semibold">Status</th>
+                        <th class="py-3 px-4 rounded-r-lg font-semibold">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-[13px]">
+                    @forelse($siswaList as $s)
+                        <tr class="hover:bg-gray-50/40 transition-colors">
+                            <td class="py-4.5 px-4 font-semibold text-[#1A1A2E] whitespace-nowrap">
+                                {{ $s['nama'] }}
+                            </td>
+                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
+                                {{ $s['nis'] }} / {{ $s['nisn'] }}
+                            </td>
+                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
+                                {{ $s['kelas'] }}
+                            </td>
+                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
+                                {{ $s['tingkat_fase'] }}
+                            </td>
+                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
+                                <span class="px-2.5 py-1 rounded-md text-xs font-semibold
+                                    {{ $s['kekhususan'] === 'Tunarungu' ? 'bg-indigo-50 text-indigo-700' : '' }}
+                                    {{ $s['kekhususan'] === 'Tunagrahita' ? 'bg-amber-50 text-amber-700' : '' }}
+                                    {{ $s['kekhususan'] === 'Autis' ? 'bg-emerald-50 text-emerald-700' : '' }}">
+                                    {{ $s['kekhususan'] }}
+                                </span>
+                            </td>
+                            <td class="py-4.5 px-4 whitespace-nowrap font-medium {{ $s['status'] === 'Aktif' ? 'text-[#16A34A]' : 'text-gray-500' }}">
+                                {{ $s['status'] }}
+                            </td>
+                            <td class="py-4.5 px-4 whitespace-nowrap text-gray-500">
+                                <div class="flex items-center gap-1.5 text-[13px]">
+                                    <a href="{{ route('admin.siswa.show', $s['id']) }}" class="text-gray-700 hover:text-[#555783] font-medium transition-colors">
+                                        Detail
+                                    </a>
+                                    <span class="text-gray-300">/</span>
+                                    <a href="{{ route('admin.siswa.edit', $s['id']) }}" class="text-[#555783] hover:underline font-semibold transition-colors">
+                                        Edit
+                                    </a>
+                                    <span class="text-gray-300">/</span>
+                                    <button
+                                        type="button"
+                                        @click="$dispatch('open-delete-modal', { 
+                                            name: '{{ addslashes($s['nama']) }}', 
+                                            details: 'NIS {{ $s['nis'] }} · NISN {{ $s['nisn'] }} · {{ $s['kelas'] }} ({{ $s['kekhususan'] }})',
+                                            action: '{{ route('admin.siswa.destroy', $s['id']) }}'
+                                        })"
+                                        class="text-rose-600 hover:text-rose-800 font-semibold transition-colors cursor-pointer"
+                                    >
+                                        Hapus
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-gray-400">
+                                Tidak ada data siswa ditemukan.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        <x-pagination :total="count($siswaList)" :count="count($siswaList)" :perPage="10" />
+    </x-card>
+
+    <!-- Callout Note Sesuai Mockup -->
+    <x-callout-note
+        title="Riwayat akademik tetap tersimpan"
+        subtitle="Siswa lulus atau pindah tidak dihapus dari arsip. Buka Detail untuk melihat rapor lintas tahun." />
+
+    <!-- Reusable Modal Confirm Delete dengan 2 Langkah Verifikasi -->
+    <x-modal.confirm-delete
+        title="Hapus data siswa?"
+        itemName="Alya Putri"
+        itemDetails="NIS 26001 · NISN 0160001001 · Tunarungu A"
+        confirmAction="#"
+    />
+
+</x-layouts.admin>
