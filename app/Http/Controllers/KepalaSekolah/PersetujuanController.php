@@ -4,6 +4,7 @@ namespace App\Http\Controllers\KepalaSekolah;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\Kelas;
 use App\Models\Rapor;
 use App\Models\Sekolah;
 use App\Models\Siswa;
@@ -18,11 +19,16 @@ class PersetujuanController extends Controller
     {
         $tahunAktif = TahunAjaran::getAktif();
         $sekolah = Sekolah::instance();
+        $kelasList = Kelas::all();
+
+        $search = $request->query('search');
+        $statusFilter = $request->query('status');
+        $kelasId = $request->query('kelas_id');
+        $kekhususan = $request->query('kekhususan');
 
         $query = Rapor::with(['siswa.penugasanKelas.kelas', 'waliKelas'])
             ->where('tahun_ajaran_id', optional($tahunAktif)->id);
 
-        $search = $request->query('search');
         if ($search) {
             $query->whereHas('siswa', function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
@@ -30,7 +36,42 @@ class PersetujuanController extends Controller
             });
         }
 
-        $raporModels = $query->latest('tgl_pengajuan')->get();
+        if ($kelasId) {
+            $query->whereHas('siswa.penugasanKelas', function ($q) use ($kelasId) {
+                $q->where('kelas_id', $kelasId);
+            });
+        }
+
+        if ($kekhususan && in_array($kekhususan, ['Tunarungu', 'Tunagrahita', 'Autis'])) {
+            $query->whereHas('siswa', function ($q) use ($kekhususan) {
+                $q->where('kekhususan', $kekhususan);
+            });
+        }
+
+        $allRapors = $query->latest('tgl_pengajuan')->get();
+
+        // Hitung counts status
+        $counts = [
+            'total'        => 0,
+            'diajukan'     => 0,
+            'disetujui'    => 0,
+            'dikembalikan' => 0,
+        ];
+
+        foreach ($allRapors as $r) {
+            $counts['total']++;
+            $st = strtolower($r->status);
+            if (isset($counts[$st])) {
+                $counts[$st]++;
+            }
+        }
+
+        // Filter status jika dipilih
+        if ($statusFilter && in_array(strtolower($statusFilter), ['diajukan', 'disetujui', 'dikembalikan'])) {
+            $raporModels = $allRapors->filter(fn($r) => strtolower($r->status) === strtolower($statusFilter));
+        } else {
+            $raporModels = $allRapors;
+        }
 
         $antrean = [];
         foreach ($raporModels as $r) {
@@ -52,7 +93,17 @@ class PersetujuanController extends Controller
             ];
         }
 
-        return view('kepala_sekolah.persetujuan.index', compact('tahunAktif', 'sekolah', 'antrean', 'search'));
+        return view('kepala_sekolah.persetujuan.index', compact(
+            'tahunAktif',
+            'sekolah',
+            'antrean',
+            'kelasList',
+            'search',
+            'statusFilter',
+            'kelasId',
+            'kekhususan',
+            'counts'
+        ));
     }
 
     public function show(int $id): View
