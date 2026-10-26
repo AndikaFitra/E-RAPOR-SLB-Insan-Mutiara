@@ -40,8 +40,8 @@ class MataPelajaranController extends Controller
                 'kode'     => $m->kode,
                 'nama'     => $m->nama,
                 'kelompok' => $m->kelompok,
-                'fase'     => 'Fase D, E, F',
-                'status'   => 'Aktif',
+                'fase'     => 'Sesuai penugasan siswa',
+                'status'   => $m->is_aktif ? 'Aktif' : 'Tidak aktif',
                 'raw'      => $m,
             ];
         }
@@ -54,7 +54,7 @@ class MataPelajaranController extends Controller
         $validated = $request->validate([
             'kode'     => 'required|string|max:20|unique:mata_pelajaran,kode',
             'nama'     => 'required|string|max:100',
-            'kelompok' => 'required|in:Umum,Program Kekhususan,Keterampilan Pilihan,Muatan Lokal',
+            'kelompok' => 'required|in:Umum,Seni dan Vokasi,Program Kekhususan,Keterampilan Pilihan,Muatan Lokal',
         ]);
 
         $mapel = MataPelajaran::create([
@@ -76,7 +76,7 @@ class MataPelajaranController extends Controller
         $validated = $request->validate([
             'kode'     => 'required|string|max:20|unique:mata_pelajaran,kode,' . $mapel->id,
             'nama'     => 'required|string|max:100',
-            'kelompok' => 'required|in:Umum,Program Kekhususan,Keterampilan Pilihan,Muatan Lokal',
+            'kelompok' => 'required|in:Umum,Seni dan Vokasi,Program Kekhususan,Keterampilan Pilihan,Muatan Lokal',
         ]);
 
         $mapel->update([
@@ -95,6 +95,9 @@ class MataPelajaranController extends Controller
     {
         $mapel = MataPelajaran::findOrFail($id);
         $nama = $mapel->nama;
+        if ($mapel->nilaiAsesmen()->exists() || $mapel->kelas()->exists()) {
+            return back()->with('error', 'Mata pelajaran masih digunakan pada penilaian atau kurikulum kelas.');
+        }
         $mapel->delete();
 
         ActivityLog::log('Menghapus mata pelajaran: ' . $nama, null, 'Hapus');

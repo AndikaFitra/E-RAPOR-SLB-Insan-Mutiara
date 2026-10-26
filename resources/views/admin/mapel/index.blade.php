@@ -207,7 +207,7 @@
                     <div>
                         <label class="block font-semibold text-gray-700 mb-1.5">Kelompok Muatan *</label>
                         <select name="kelompok" required class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]">
-                            <option value="Umum">Umum</option>
+                            <option value="Umum">Umum</option><option value="Seni dan Vokasi">Seni dan Vokasi</option>
                             <option value="Program Kekhususan">Program Kekhususan (3 Ketunaan)</option>
                             <option value="Keterampilan Pilihan">Keterampilan Pilihan</option>
                             <option value="Muatan Lokal">Muatan Lokal</option>
@@ -260,7 +260,7 @@
                     <div>
                         <label class="block font-semibold text-gray-700 mb-1.5">Kelompok Muatan *</label>
                         <select name="kelompok" x-model="editKelompok" required class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]">
-                            <option value="Umum">Umum</option>
+                            <option value="Umum">Umum</option><option value="Seni dan Vokasi">Seni dan Vokasi</option>
                             <option value="Program Kekhususan">Program Kekhususan (3 Ketunaan)</option>
                             <option value="Keterampilan Pilihan">Keterampilan Pilihan</option>
                             <option value="Muatan Lokal">Muatan Lokal</option>

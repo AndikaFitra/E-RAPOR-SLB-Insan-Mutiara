@@ -37,7 +37,7 @@ Route::get('/', function () {
 // Autentikasi
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('login.post');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -68,12 +68,12 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/kelas', [KelasController::class, 'store'])->name('kelas.store');
     Route::put('/kelas/{id}', [KelasController::class, 'update'])->name('kelas.update');
     Route::delete('/kelas/{id}', [KelasController::class, 'destroy'])->name('kelas.destroy');
-    Route::get('/penugasan', [PenugasanController::class, 'index'])->name('penugasan.index');
-    Route::post('/penugasan', [PenugasanController::class, 'store'])->name('penugasan.store');
+    Route::get('/penugasan', [\App\Http\Controllers\Admin\AssignmentController::class, 'index'])->name('penugasan.index');
+    Route::post('/penugasan', [\App\Http\Controllers\Admin\AssignmentController::class, 'store'])->name('penugasan.store');
 
     // Tahun Ajaran
-    Route::get('/tahun-ajaran', [TahunAjaranController::class, 'index'])->name('tahun-ajaran.index');
-    Route::post('/tahun-ajaran', [TahunAjaranController::class, 'store'])->name('tahun-ajaran.store');
+    Route::get('/tahun-ajaran', [\App\Http\Controllers\Admin\SettingsController::class, 'years'])->name('tahun-ajaran.index');
+    Route::post('/tahun-ajaran', [\App\Http\Controllers\Admin\SettingsController::class, 'saveYear'])->name('tahun-ajaran.store');
     Route::post('/tahun-ajaran/{id}/aktifkan', [TahunAjaranController::class, 'setAktif'])->name('tahun-ajaran.aktifkan');
 
     // Orang Tua / Wali
@@ -95,8 +95,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('/ekstrakurikuler/{id}', [EkstrakurikulerController::class, 'destroy'])->name('ekskul.destroy');
 
     // Data Sekolah
-    Route::get('/sekolah', [SekolahController::class, 'index'])->name('sekolah.index');
-    Route::put('/sekolah', [SekolahController::class, 'update'])->name('sekolah.update');
+    Route::get('/sekolah', [\App\Http\Controllers\Admin\SettingsController::class, 'school'])->name('sekolah.index');
+    Route::put('/sekolah', [\App\Http\Controllers\Admin\SettingsController::class, 'saveSchool'])->name('sekolah.update');
 
     // Akun & Hak Akses
     Route::get('/akun', [AkunController::class, 'index'])->name('akun.index');
@@ -106,33 +106,61 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/akun/{id}/toggle-status', [AkunController::class, 'toggleStatus'])->name('akun.toggle-status');
 
     // Arsip
-    Route::get('/arsip', [ArsipController::class, 'index'])->name('arsip.index');
+    Route::get('/arsip', [\App\Http\Controllers\ReportController::class, 'arsip'])->name('arsip.index');
 });
 
 // ── Modul Kepala Sekolah ─────────────────────────────────────
 Route::middleware(['auth', 'role:kepala_sekolah'])->prefix('kepala-sekolah')->name('kepala.')->group(function () {
     Route::get('/dashboard', [KepalaDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/persetujuan', [KepalaPersetujuanController::class, 'index'])->name('persetujuan.index');
-    Route::get('/persetujuan/{id}', [KepalaPersetujuanController::class, 'show'])->name('persetujuan.show');
-    Route::get('/persetujuan/{id}/cetak', [KepalaPersetujuanController::class, 'cetak'])->name('persetujuan.cetak');
-    Route::post('/persetujuan/{id}/approve', [KepalaPersetujuanController::class, 'approve'])->name('persetujuan.approve');
-    Route::post('/persetujuan/{id}/reject', [KepalaPersetujuanController::class, 'reject'])->name('persetujuan.reject');
-    Route::get('/leger', [KepalaLegerController::class, 'index'])->name('leger.index');
-    Route::get('/arsip', [KepalaArsipController::class, 'index'])->name('arsip.index');
+    Route::get('/persetujuan', [\App\Http\Controllers\KepalaSekolah\ReviewController::class, 'index'])->name('persetujuan.index');
+    Route::get('/persetujuan/{id}', [\App\Http\Controllers\ReportController::class, 'show'])->name('persetujuan.show');
+    Route::get('/persetujuan/{id}/cetak', [\App\Http\Controllers\ReportController::class, 'cetak'])->name('persetujuan.cetak');
+    Route::post('/persetujuan/{id}/approve', [\App\Http\Controllers\KepalaSekolah\ReviewController::class, 'approve'])->name('persetujuan.approve');
+    Route::post('/persetujuan/{id}/reject', [\App\Http\Controllers\KepalaSekolah\ReviewController::class, 'reject'])->name('persetujuan.reject');
+    Route::get('/leger', [\App\Http\Controllers\KepalaSekolah\ExportController::class, 'index'])->name('leger.index');
+    Route::get('/arsip', [\App\Http\Controllers\ReportController::class, 'arsip'])->name('arsip.index');
 });
 
 // ── Modul Wali Kelas ─────────────────────────────────────────
 Route::middleware(['auth', 'role:wali_kelas'])->prefix('wali-kelas')->name('wali.')->group(function () {
     Route::get('/dashboard', [WaliDashboardController::class, 'index'])->name('dashboard');
-    Route::get('/nilai-asesmen', [WaliAsesmenController::class, 'index'])->name('asesmen.index');
-    Route::post('/nilai-asesmen', [WaliAsesmenController::class, 'store'])->name('asesmen.store');
-    Route::get('/evaluasi-nonakademik', [WaliNonakademikController::class, 'index'])->name('nonakademik.index');
-    Route::post('/evaluasi-nonakademik', [WaliNonakademikController::class, 'store'])->name('nonakademik.store');
-    Route::get('/rapor-saya', [WaliRaporController::class, 'index'])->name('rapor.index');
-    Route::get('/rapor-saya/{id}', [WaliRaporController::class, 'show'])->name('rapor.show');
-    Route::get('/rapor-saya/{id}/cetak', [WaliRaporController::class, 'cetak'])->name('rapor.cetak');
-    Route::post('/rapor-saya/{id}/ajukan', [WaliRaporController::class, 'submit'])->name('rapor.submit');
-    Route::get('/distribusi', [WaliDistribusiController::class, 'index'])->name('distribusi.index');
-    Route::post('/distribusi/{id}/mark-sent', [WaliDistribusiController::class, 'markSent'])->name('distribusi.mark-sent');
-    Route::get('/arsip', [WaliArsipController::class, 'index'])->name('arsip.index');
+    Route::get('/nilai-asesmen', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'asesmen'])->name('asesmen.index');
+    Route::post('/nilai-asesmen', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'saveScores'])->name('asesmen.store');
+    Route::get('/evaluasi-nonakademik', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'nonakademik'])->name('nonakademik.index');
+    Route::post('/evaluasi-nonakademik', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'saveEvaluation'])->name('nonakademik.store');
+    Route::get('/rapor-saya', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'rapor'])->name('rapor.index');
+    Route::get('/rapor-saya/{id}', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'show'])->name('rapor.show');
+    Route::get('/rapor-saya/{id}/cetak', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'cetak'])->name('rapor.cetak');
+    Route::post('/rapor-saya/{id}/ajukan', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'submit'])->name('rapor.submit');
+    Route::get('/distribusi', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'distribusi'])->name('distribusi.index');
+    Route::post('/distribusi/{id}/mark-sent', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'markSent'])->name('distribusi.mark-sent');
+    Route::get('/arsip', [\App\Http\Controllers\ReportController::class, 'arsip'])->name('arsip.index');
 });
+
+// Document IDs always identify reports.
+Route::middleware(['auth', 'role:admin,kepala_sekolah,wali_kelas'])->group(function () {
+    Route::get('/dokumen-rapor/{id}', [\App\Http\Controllers\ReportController::class, 'show'])->name('reports.show');
+    Route::get('/dokumen-rapor/{id}/cetak', [\App\Http\Controllers\ReportController::class, 'cetak'])->name('reports.cetak');
+});
+Route::get('/rapor-penerima/{token}', [\App\Http\Controllers\ReportController::class, 'shared'])
+    ->where('token', '[A-Za-z0-9]{64}')->middleware('throttle:30,1')->name('reports.shared');
+Route::middleware(['auth', 'role:kepala_sekolah'])->group(function () {
+    Route::get('/kepala-sekolah/leger/export', [\App\Http\Controllers\KepalaSekolah\ExportController::class, 'export'])->name('kepala.leger.export');
+    Route::post('/kepala-sekolah/persetujuan/{id}/return-legacy', [\App\Http\Controllers\KepalaSekolah\ReviewController::class, 'returnLegacy'])->name('kepala.persetujuan.return-legacy');
+    Route::post('/kepala-sekolah/persetujuan/{id}/finalize', [\App\Http\Controllers\KepalaSekolah\ReviewController::class, 'finalize'])->name('kepala.persetujuan.finalize');
+});
+
+Route::middleware(['auth','role:admin'])->group(function () {
+    Route::get('/admin/ekskul-penugasan', [\App\Http\Controllers\Admin\AssignmentController::class,'ekskul'])->name('admin.ekskul.penugasan');
+    Route::post('/admin/ekskul-penugasan', [\App\Http\Controllers\Admin\AssignmentController::class,'saveEkskul'])->name('admin.ekskul.penugasan.store');
+    Route::put('/admin/tahun-ajaran/{id}', [\App\Http\Controllers\Admin\SettingsController::class,'saveYear'])->name('admin.tahun-ajaran.update');
+    Route::get('/admin/akun/{id}/edit', [\App\Http\Controllers\Admin\SettingsController::class,'account'])->name('admin.akun.edit');
+    Route::put('/admin/akun/{id}', [\App\Http\Controllers\Admin\SettingsController::class,'saveAccount'])->name('admin.akun.update');
+});
+Route::get('/logo-sekolah', function () {
+    $path = \App\Models\Sekolah::instance()->logo;
+    if ($path && \Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        return response()->file(\Illuminate\Support\Facades\Storage::disk('public')->path($path));
+    }
+    return response()->file(public_path('images/logo-slb.png'));
+})->name('school.logo');

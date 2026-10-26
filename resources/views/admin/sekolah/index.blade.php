@@ -117,7 +117,7 @@
                 <x-card>
                     <h3 class="text-base font-bold text-[#1A1A2E] mb-4">Logo Lembaga</h3>
                     <div class="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#D5D7E2] rounded-2xl bg-gray-50/50">
-                        <img src="{{ asset('images/logo-slb.png') }}" alt="Logo SLB" class="w-24 h-24 object-contain mb-3" />
+                        <img src="{{ route('school.logo') }}" alt="Logo SLB" class="w-24 h-24 object-contain mb-3" />
                         <p class="text-xs font-semibold text-gray-700">Logo SLB Insan Mutiara</p>
                         <p class="text-[11px] text-gray-400 mt-1">PNG Transparan · Digunakan pada Cover Rapor</p>
                     </div>

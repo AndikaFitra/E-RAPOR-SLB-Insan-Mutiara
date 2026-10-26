@@ -3,105 +3,40 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AuthAndDashboardTest extends TestCase
 {
-    use DatabaseTransactions;
+    use RefreshDatabase;
 
-    public function test_login_screen_can_be_rendered(): void
+    public function test_login_and_forgot_help_render_without_demo_controls(): void
     {
-        $response = $this->get('/login');
-
-        $response->assertStatus(200);
-        $response->assertSee('E-Rapor SLB Insan Mutiara');
-        $response->assertSee('Akses Cepat Akun Demo');
+        $this->get('/login')->assertOk()->assertSee('Lupa password?')->assertDontSee('Akses Cepat Pengujian');
     }
 
-    public function test_users_cannot_authenticate_with_invalid_password(): void
+    public function test_invalid_credentials_and_inactive_accounts_are_rejected(): void
     {
-        $response = $this->post('/login', [
-            'email'    => 'admin@slbinsanmutiara.sch.id',
-            'password' => 'wrong-password',
-        ]);
-
+        User::factory()->create(['email'=>'inactive@example.test','is_aktif'=>false,'password'=>bcrypt('secret123')]);
+        $this->post('/login',['username'=>'unknown','password'=>'wrong'])->assertSessionHasErrors('credentials');
+        $this->post('/login',['username'=>'inactive@example.test','password'=>'secret123'])->assertSessionHasErrors('inactive');
         $this->assertGuest();
-        $response->assertSessionHasErrors('email');
     }
 
-    public function test_deactivated_user_cannot_login(): void
+    public function test_each_role_authenticates_to_its_dashboard_and_can_logout(): void
     {
-        $response = $this->post('/login', [
-            'email'    => 'nonaktif@slbinsanmutiara.sch.id',
-            'password' => 'password',
-        ]);
-
-        $this->assertGuest();
-        $response->assertSessionHasErrors(['email' => 'Akun Anda sedang dinonaktifkan. Silakan hubungi Administrator sekolah.']);
+        foreach (['admin'=>'admin.dashboard','wali_kelas'=>'wali.dashboard','kepala_sekolah'=>'kepala.dashboard'] as $role=>$route) {
+            $user=User::factory()->create(['role'=>$role,'is_aktif'=>true,'password'=>bcrypt('secret123')]);
+            $this->post('/login',['username'=>$user->email,'password'=>'secret123'])->assertRedirect(route($route));
+            $this->assertAuthenticatedAs($user);
+            $this->post('/logout')->assertRedirect(route('login'));
+            $this->assertGuest();
+        }
     }
 
-    public function test_admin_can_authenticate_and_access_dashboard(): void
+    public function test_role_access_is_enforced(): void
     {
-        $response = $this->post('/login', [
-            'email'    => 'admin@slbinsanmutiara.sch.id',
-            'password' => 'password',
-        ]);
-
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('admin.dashboard'));
-
-        $dashboardResponse = $this->get('/admin/dashboard');
-        $dashboardResponse->assertStatus(200);
-        $dashboardResponse->assertSee('Dashboard Administrator');
-    }
-
-    public function test_kepala_sekolah_can_authenticate_and_access_dashboard(): void
-    {
-        $response = $this->post('/login', [
-            'email'    => 'kepsek@slbinsanmutiara.sch.id',
-            'password' => 'password',
-        ]);
-
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('kepala.dashboard'));
-
-        $dashboardResponse = $this->get('/kepala-sekolah/dashboard');
-        $dashboardResponse->assertStatus(200);
-        $dashboardResponse->assertSee('Dashboard Kepala Sekolah');
-    }
-
-    public function test_wali_kelas_can_authenticate_and_access_dashboard(): void
-    {
-        $response = $this->post('/login', [
-            'email'    => 'rinapratiwi@slbinsanmutiara.sch.id',
-            'password' => 'password',
-        ]);
-
-        $this->assertAuthenticated();
-        $response->assertRedirect(route('wali.dashboard'));
-
-        $dashboardResponse = $this->get('/wali-kelas/dashboard');
-        $dashboardResponse->assertStatus(200);
-        $dashboardResponse->assertSee('Beranda Wali Kelas');
-        $dashboardResponse->assertSee('Kelas Campuran Tingkat SLB');
-    }
-
-    public function test_wali_kelas_cannot_access_admin_dashboard(): void
-    {
-        $wali = User::where('role', 'wali_kelas')->first();
-
-        $response = $this->actingAs($wali)->get('/admin/dashboard');
-        $response->assertStatus(403);
-    }
-
-    public function test_user_can_logout(): void
-    {
-        $user = User::first();
-
-        $response = $this->actingAs($user)->post('/logout');
-
-        $this->assertGuest();
-        $response->assertRedirect('/login');
+        $wali=User::factory()->create(['role'=>'wali_kelas','is_aktif'=>true]);
+        $this->actingAs($wali)->get('/admin/dashboard')->assertForbidden();
     }
 }

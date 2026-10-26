@@ -49,7 +49,6 @@ class AuthController extends Controller
         $sanitized = str_replace(['.', '_', '-'], '', strtolower($usernameInput));
         $user = User::where('email', $usernameInput)
             ->orWhere('email', $sanitized . '@slbinsanmutiara.sch.id')
-            ->orWhere('email', 'like', $sanitized . '%')
             ->first();
 
         // Validasi kredensial pengguna

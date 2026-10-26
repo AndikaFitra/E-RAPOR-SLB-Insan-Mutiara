@@ -35,21 +35,19 @@ class KelasController extends Controller
         foreach ($kelasModels as $k) {
             $wali = $k->waliKelasAktif();
             $siswaCount = $k->penugasanSiswaKelas()->where('tahun_ajaran_id', optional($tahunAktif)->id)->count();
-            if ($siswaCount === 0) {
-                $siswaCount = $k->penugasanSiswaKelas()->count();
-            }
+
 
             // Kumpulkan tingkat siswa
-            $tingkatList = $k->penugasanSiswaKelas()->pluck('tingkat')->unique()->filter()->implode(', ');
+            $tingkatList = $k->penugasanSiswaKelas()->where('tahun_ajaran_id', optional($tahunAktif)->id)->pluck('tingkat')->unique()->filter()->implode(', ');
 
             $kelasList[] = [
                 'id'            => $k->id,
                 'nama'          => $k->nama,
                 'kode'          => $k->kode,
                 'kekhususan'    => $k->kekhususan,
-                'tingkat_siswa' => $tingkatList ?: 'VII, VIII, IX',
+                'tingkat_siswa' => $tingkatList ?: 'Belum ditetapkan',
                 'wali_kelas'    => $wali ? $wali->nama_lengkap : 'Belum ditugaskan',
-                'siswa_count'   => $siswaCount ?: 6,
+                'siswa_count'   => $siswaCount,
                 'status'        => 'Aktif',
                 'raw'           => $k,
             ];
@@ -106,6 +104,9 @@ class KelasController extends Controller
     {
         $kelas = Kelas::findOrFail($id);
         $nama = $kelas->nama;
+        if ($kelas->penugasanSiswaKelas()->exists() || $kelas->penugasanWaliKelas()->exists()) {
+            return back()->with('error', 'Kelas masih memiliki penugasan dan tidak dapat dihapus.');
+        }
         $kelas->delete();
 
         ActivityLog::log('Menghapus data kelas: ' . $nama, null, 'Hapus');

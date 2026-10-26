@@ -1,0 +1,105 @@
+import { test, expect } from '@playwright/test';
+async function login(page, username) {
+    await page.goto('/login');
+    await page.locator('[name=username]').fill(username);
+    await page.locator('[name=password]').fill('password');
+    await page.locator('button[type=submit]').click();
+    await expect(page).toHaveURL(/dashboard/);
+}
+test('admin navigation works on desktop and mobile', async ({ page }) => {
+    const errors = [];
+    page.on('pageerror', e => errors.push(e.message));
+    await login(page, 'admin');
+    for (const url of ['/admin/siswa','/admin/penugasan','/admin/ekskul-penugasan','/admin/sekolah']) {
+        const response = await page.goto(url);
+        expect(response.status()).toBe(200);
+    }
+    await page.screenshot({ path:'storage/framework/testing/admin-desktop.png',fullPage:true });
+    await page.setViewportSize({ width:390,height:844 });
+    await page.goto('/admin/penugasan');
+    const menu=page.getByRole('button',{name:'Buka menu'});
+    await expect(menu).toBeVisible();
+    await menu.click();
+    await expect(page.locator('body')).toHaveClass(/menu-open/);
+    await expect(page.locator('aside').first()).toBeVisible();
+    await menu.click();
+    await expect(page.locator('aside').first()).toBeHidden();
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.screenshot({ path:'storage/framework/testing/admin-mobile.png',fullPage:true });
+    expect(errors).toEqual([]);
+});
+test('wali can save class scores and cancel leaving unsaved changes', async ({ page }) => {
+    const errors=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    await login(page,'rinapratiwi');
+    await page.goto('/wali-kelas/nilai-asesmen');
+    await page.getByRole('link',{name:'Input / edit nilai'}).first().click();
+    const score=page.locator('input[type=number]:enabled').first();
+    await score.fill('42');
+    await page.locator('textarea:enabled').first().fill('Capaian hasil pengujian browser.');
+    page.once('dialog',d=>d.dismiss());
+    await page.getByRole('link',{name:'Kembali',exact:true}).click();
+    await expect(score).toHaveValue('42');
+    await page.getByRole('button',{name:'Simpan nilai kelas'}).click();
+    await expect(page.locator('input[type=number]:enabled').first()).toHaveValue('42');
+    await page.reload();
+    await expect(page.locator('input[type=number]:enabled').first()).toHaveValue('42');
+    await page.setViewportSize({width:390,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.screenshot({path:'storage/framework/testing/asesmen-mobile.png',fullPage:true});
+    expect(errors).toEqual([]);
+});
+test('kepala can export the filtered ledger',async ({page})=>{
+    await login(page,'kepsek');
+    await page.goto('/kepala-sekolah/leger');
+    await expect(page.getByText('Kriteria ketuntasan belum ditetapkan oleh sekolah.',{exact:false})).toBeVisible();
+    await page.locator('[name=maksimum]').fill('100');
+    await page.getByRole('button',{name:'Terapkan filter'}).click();
+    const pending=page.waitForEvent('download');
+    await page.getByRole('link',{name:'Unduh Excel (.xlsx)'}).click();
+    expect((await pending).suggestedFilename()).toBe('leger.xlsx');
+    await page.screenshot({path:'storage/framework/testing/leger-desktop.png',fullPage:true});
+});
+
+test('preview uses the same report layout and student data', async ({page}) => {
+    await login(page, 'rinapratiwi');
+    await page.goto('/wali-kelas/rapor-saya');
+    await page.getByRole('link', {name:'Preview / periksa kelengkapan'}).first().click();
+    const preview = await page.getByRole('link', {name:'Pratinjau cetak'}).getAttribute('href');
+    await page.goto(preview);
+    await expect(page.getByText('HASIL BELAJAR PESERTA DIDIK')).toBeVisible();
+    await expect(page.getByText('KETERANGAN DIRI PESERTA DIDIK')).toBeVisible();
+    await expect(page.getByText('Muatan Pelajaran')).toBeVisible();
+    await expect(page.getByText('Keputusan:')).toBeVisible();
+    await page.screenshot({path:'storage/framework/testing/report-preview-browser.png',fullPage:true});
+});
+
+test('principal approval uses themed dialog and equal action buttons', async ({page}) => {
+    await login(page, 'kepsek');
+    await page.goto('/kepala-sekolah/persetujuan');
+    await page.locator('tr', {hasText:'Elsa Rahma'}).getByRole('link', {name:'Review detail'}).click();
+    await expect(page.getByRole('button', {name:'Setujui rapor',exact:true})).toBeDisabled();
+    await page.goto('/kepala-sekolah/persetujuan');
+    const row = page.locator('tr', {hasText:'Bima Pratama'});
+    await row.getByRole('link', {name:'Review detail'}).click();
+    const preview = page.getByRole('link', {name:'Pratinjau cetak'});
+    const download = page.getByRole('link', {name:'Unduh PDF'});
+    const approve = page.getByRole('button', {name:'Setujui rapor',exact:true});
+    await expect(approve).toBeEnabled();
+    const heights = await Promise.all([preview,download,approve].map(async item => (await item.boundingBox()).height));
+    expect(new Set(heights).size).toBe(1);
+    let nativeDialogs = 0;
+    page.on('dialog', () => nativeDialogs++);
+    await approve.click();
+    const dialog = page.getByRole('dialog', {name:'Setujui rapor ini?'});
+    await expect(dialog).toBeVisible();
+    expect(nativeDialogs).toBe(0);
+    await dialog.getByRole('button', {name:'Batal'}).click();
+    await expect(dialog).toBeHidden();
+    await approve.click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog).toHaveCSS('opacity', '1');
+    await page.screenshot({path:'storage/framework/testing/persetujuan-modal.png'});
+    await dialog.getByRole('button', {name:'Ya, setujui rapor'}).click();
+    await expect(page.getByText('Rapor disetujui. PDF final dan tautan penerima sudah dibuat.')).toBeVisible();
+});

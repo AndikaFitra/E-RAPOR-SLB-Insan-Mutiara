@@ -14,7 +14,7 @@ class TahunAjaran extends Model
     protected $fillable = [
         'tahun',
         'semester',
-        'is_aktif',
+        'is_aktif', 'tgl_mulai', 'tgl_selesai',
     ];
 
     protected function casts(): array
@@ -44,8 +44,11 @@ class TahunAjaran extends Model
     // Aktifkan tahun ajaran ini dan nonaktifkan yang lain
     public function aktifkan(): void
     {
-        static::query()->update(['is_aktif' => false]);
-        $this->update(['is_aktif' => true]);
+        \Illuminate\Support\Facades\DB::transaction(function () {
+            static::query()->orderBy('id')->lockForUpdate()->get();
+            static::query()->update(['is_aktif' => false]);
+            $this->update(['is_aktif' => true]);
+        });
     }
 
     // ── Relasi ──────────────────────────────────────────────

@@ -3,232 +3,109 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityLog;
-use App\Models\Kelas;
-use App\Models\PenugasanSiswaKelas;
-use App\Models\Siswa;
-use App\Models\TahunAjaran;
-use Illuminate\Http\RedirectResponse;
+use App\Models\{ActivityLog, Kelas, PenugasanSiswaKelas, Rapor, Siswa, TahunAjaran};
+use App\Services\RaporService;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class SiswaController extends Controller
 {
-    /**
-     * Tampilkan daftar siswa dengan filter 3 ketunaan (Tunarungu, Tunagrahita, Autis).
-     */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
-        $tahunAktif = TahunAjaran::getAktif();
-        $kelasList  = Kelas::all();
+        $tahunAktif=TahunAjaran::getAktif();
+        $kelasList=Kelas::all();
+        $query=Siswa::with('penugasanKelas.kelas')
+            ->when($request->search,fn($q)=>$q->search($request->search))
+            ->when($request->kekhususan,fn($q)=>$q->where('kekhususan',$request->kekhususan))
+            ->when($request->kelas_id,fn($q)=>$q->whereHas('penugasanKelas',fn($q)=>$q->where('kelas_id',$request->kelas_id)->where('tahun_ajaran_id',$tahunAktif?->id)))
+            ->when($request->filter === 'belum_lengkap',fn($q)=>$q->where(fn($q)=>$q->whereNull('tempat_lahir')->orWhereNull('tgl_lahir')));
+        $siswaList=$query->orderBy('nama_lengkap')->get()->map(function($s) {
+            $a=$s->penugasanAktif();
+            return ['id'=>$s->id,'nama'=>$s->nama_lengkap,'nis'=>$s->nis ?? '—','nisn'=>$s->nisn,'kelas'=>$a?->kelas?->nama ?? 'Belum ditugaskan','tingkat_fase'=>($a?->tingkat ?? '—').' / '.($a?->fase ?? '—'),'kekhususan'=>$s->kekhususan,'status'=>$s->is_aktif?'Aktif':'Tidak Aktif'];
+        })->all();
+        return view('admin.siswa.index',compact('tahunAktif','kelasList','siswaList'));
+    }
 
-        $query = Siswa::with(['penugasanKelas.kelas']);
+    public function create()
+    {
+        return $this->form(new Siswa(['is_aktif'=>true]));
+    }
 
-        // Filter Pencarian
-        if ($search = $request->input('search')) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                  ->orWhere('nisn', 'like', "%{$search}%");
-            });
-        }
+    public function edit(int $id)
+    {
+        return $this->form(Siswa::findOrFail($id));
+    }
 
-        // Filter Kekhususan (3 Ketunaan)
-        if ($kekhususan = $request->input('kekhususan')) {
-            if (in_array($kekhususan, ['Tunarungu', 'Tunagrahita', 'Autis'])) {
-                $query->where('kekhususan', $kekhususan);
+    private function form(Siswa $siswa)
+    {
+        $periode=TahunAjaran::getAktif();
+        $kelasList=Kelas::all();
+        $penugasan=$siswa->exists?$siswa->penugasanAktif():null;
+        return view('academic.student-form',compact('siswa','periode','kelasList','penugasan'));
+    }
+
+    public function store(Request $request)
+    {
+        return $this->save($request,new Siswa());
+    }
+
+    public function update(Request $request,int $id)
+    {
+        return $this->save($request,Siswa::findOrFail($id));
+    }
+
+    private function save(Request $request,Siswa $siswa)
+    {
+        $input=$request->validate([
+            'nama_lengkap'=>'required|string|max:100',
+            'nisn'=>['required','digits:10',Rule::unique('siswa')->ignore($siswa->id)],
+            'nis'=>['nullable','string','max:30',Rule::unique('siswa')->ignore($siswa->id)],
+            'jenis_kelamin'=>'required|in:L,P','kekhususan'=>'required|in:Tunarungu,Tunagrahita,Autis',
+            'tempat_lahir'=>'nullable|string|max:100','tgl_lahir'=>'nullable|date|before_or_equal:today',
+            'agama'=>'nullable|string|max:50','alamat'=>'nullable|string|max:2000',
+            'no_hp'=>'nullable|string|max:20','tanggal_diterima'=>'nullable|date','is_aktif'=>'required|boolean',
+            'kelas_id'=>'nullable|integer|exists:kelas,id','tingkat'=>'nullable|required_with:kelas_id|in:I,II,III,IV,V,VI,VII,VIII,IX,X,XI,XII',
+            'fase'=>'nullable|required_with:kelas_id|in:A,B,C,D,E,F','konfirmasi_pindah'=>'sometimes|accepted',
+        ]);
+        DB::transaction(function() use($input,$request,$siswa) {
+            if($siswa->exists) Siswa::whereKey($siswa->id)->lockForUpdate()->firstOrFail();
+            $periode=TahunAjaran::getAktif();
+            $old=$siswa->exists?$siswa->penugasanAktif():null;
+            $changed=($old?->kelas_id != ($input['kelas_id'] ?? null)) || ($old && ($old->tingkat !== ($input['tingkat'] ?? null) || $old->fase !== ($input['fase'] ?? null)));
+            if($changed && $siswa->exists && Rapor::where('siswa_id',$siswa->id)->where('tahun_ajaran_id',$periode?->id)->whereIn('status',['diajukan','disetujui'])->exists()) {
+                throw ValidationException::withMessages(['kelas_id'=>'Penempatan siswa dengan rapor terkunci tidak dapat diubah.']);
             }
-        }
-
-        // Filter Kelas
-        if ($kelasId = $request->input('kelas_id')) {
-            $query->whereHas('penugasanKelas', function ($q) use ($kelasId) {
-                $q->where('kelas_id', $kelasId);
-            });
-        }
-
-        $siswaModels = $query->orderBy('id')->get();
-
-        // Map data ke format yang diharapkan view
-        $siswaList = $siswaModels->map(function ($s, $index) {
-            $penugasan = $s->penugasanAktif();
-            $tingkat = $penugasan ? $penugasan->tingkat : 'VII';
-            $fase = $penugasan ? $penugasan->fase : 'D';
-            $namaKelas = $penugasan && $penugasan->kelas ? $penugasan->kelas->nama : ($s->kekhususan . ' A');
-
-            return [
-                'id'           => $s->id,
-                'nama'         => $s->nama_lengkap,
-                'nis'          => '2600' . ($s->id),
-                'nisn'         => $s->nisn,
-                'kelas'        => $namaKelas,
-                'tingkat_fase' => "{$tingkat} · {$fase}",
-                'kekhususan'   => $s->kekhususan,
-                'status'       => $s->is_aktif ? 'Aktif' : 'Tidak Aktif',
-            ];
-        })->toArray();
-
-        return view('admin.siswa.index', compact('tahunAktif', 'kelasList', 'siswaList'));
+            if($old && $old->kelas_id != ($input['kelas_id'] ?? null) && !$request->boolean('konfirmasi_pindah')) {
+                throw ValidationException::withMessages(['konfirmasi_pindah'=>'Centang konfirmasi perpindahan setelah memeriksa kelas tujuan.']);
+            }
+            $siswa->fill(collect($input)->except(['kelas_id','tingkat','fase','konfirmasi_pindah'])->all())->save();
+            if(!empty($input['kelas_id'])) {
+                abort_unless($periode,422,'Aktifkan tahun ajaran sebelum menetapkan kelas.');
+                PenugasanSiswaKelas::updateOrCreate(['siswa_id'=>$siswa->id,'tahun_ajaran_id'=>$periode->id],['kelas_id'=>$input['kelas_id'],'tingkat'=>$input['tingkat'],'fase'=>$input['fase']]);
+                $wali = \App\Models\PenugasanWaliKelas::where('kelas_id', $input['kelas_id'])->where('tahun_ajaran_id', $periode->id)->first();
+                if ($wali) Rapor::where('siswa_id', $siswa->id)->where('tahun_ajaran_id', $periode->id)->whereIn('status', ['draft', 'dikembalikan'])->update(['wali_kelas_id' => $wali->guru_id]);
+            } elseif($old) $old->delete();
+            ActivityLog::log('Menyimpan biodata siswa '.$siswa->nama_lengkap,$siswa,'Sukses');
+        });
+        return redirect()->route('admin.siswa.index')->with('success','Biodata siswa disimpan.');
     }
 
-    /**
-     * Tampilkan form tambah siswa baru.
-     */
-    public function create(): View
+    public function destroy(Request $request,int $id)
     {
-        $tahunAktif = TahunAjaran::getAktif();
-        $kelasList  = Kelas::all();
-
-        return view('admin.siswa.create', compact('tahunAktif', 'kelasList'));
+        $siswa=Siswa::findOrFail($id);
+        // Preserve historical assignments and reports when archiving the student.
+        $siswa->update(['is_aktif'=>false]);
+        ActivityLog::log('Menonaktifkan siswa '.$siswa->nama_lengkap.'; arsip dipertahankan.',$siswa,'Sukses');
+        return back()->with('success','Siswa dinonaktifkan. Arsip dan riwayat penilaian tetap tersedia.');
     }
 
-    /**
-     * Simpan data siswa baru ke database.
-     */
-    public function store(Request $request): RedirectResponse
+    public function show(int $id,RaporService $reports)
     {
-        $validated = $request->validate([
-            'nama_lengkap'  => ['required', 'string', 'max:100'],
-            'nisn'          => ['required', 'string', 'max:10', 'unique:siswa,nisn'],
-            'jenis_kelamin' => ['required', 'in:L,P'],
-            'kekhususan'    => ['required', 'in:Tunarungu,Tunagrahita,Autis'],
-            'tempat_lahir'  => ['nullable', 'string', 'max:100'],
-            'tgl_lahir'     => ['nullable', 'date'],
-            'kelas_id'      => ['nullable', 'exists:kelas,id'],
-            'tingkat'       => ['nullable', 'string', 'max:10'],
-            'fase'          => ['nullable', 'string', 'max:10'],
-            'no_hp'         => ['nullable', 'string', 'max:20'],
-        ], [
-            'nama_lengkap.required'  => 'Nama lengkap siswa wajib diisi.',
-            'nisn.required'          => 'NISN wajib diisi.',
-            'nisn.unique'            => 'NISN sudah terdaftar.',
-            'kekhususan.required'    => 'Jenis kekhususan wajib dipilih (Tunarungu, Tunagrahita, atau Autis).',
-            'kekhususan.in'          => 'Jenis kekhususan harus salah satu dari: Tunarungu, Tunagrahita, atau Autis.',
-        ]);
-
-        $siswa = Siswa::create([
-            'nama_lengkap'  => $validated['nama_lengkap'],
-            'nisn'          => $validated['nisn'],
-            'jenis_kelamin' => $validated['jenis_kelamin'],
-            'kekhususan'    => $validated['kekhususan'],
-            'tempat_lahir'  => $validated['tempat_lahir'] ?? null,
-            'tgl_lahir'     => $validated['tgl_lahir'] ?? null,
-            'no_hp'         => $validated['no_hp'] ?? null,
-            'is_aktif'      => true,
-        ]);
-
-        $tahunAktif = TahunAjaran::getAktif();
-        if (! empty($validated['kelas_id']) && $tahunAktif) {
-            PenugasanSiswaKelas::create([
-                'siswa_id'        => $siswa->id,
-                'kelas_id'        => $validated['kelas_id'],
-                'tahun_ajaran_id' => $tahunAktif->id,
-                'tingkat'         => $validated['tingkat'] ?? 'VII',
-                'fase'            => $validated['fase'] ?? 'D',
-            ]);
-        }
-
-        ActivityLog::log("Menambahkan data siswa: {$siswa->nama_lengkap}", $siswa, 'Sukses');
-
-        return redirect()->route('admin.siswa.index')
-            ->with('success', "Data siswa {$siswa->nama_lengkap} ({$siswa->kekhususan}) berhasil ditambahkan.");
-    }
-
-    /**
-     * Tampilkan form edit siswa.
-     */
-    public function edit($id): View
-    {
-        $siswa = Siswa::with('penugasanKelas')->findOrFail($id);
-        $tahunAktif = TahunAjaran::getAktif();
-        $kelasList  = Kelas::all();
-        $penugasan  = $siswa->penugasanAktif();
-
-        return view('admin.siswa.edit', compact('siswa', 'tahunAktif', 'kelasList', 'penugasan'));
-    }
-
-    /**
-     * Perbarui data siswa.
-     */
-    public function update(Request $request, $id): RedirectResponse
-    {
-        $siswa = Siswa::findOrFail($id);
-
-        $validated = $request->validate([
-            'nama_lengkap'  => ['required', 'string', 'max:100'],
-            'nisn'          => ['required', 'string', 'max:10', 'unique:siswa,nisn,' . $siswa->id],
-            'jenis_kelamin' => ['required', 'in:L,P'],
-            'kekhususan'    => ['required', 'in:Tunarungu,Tunagrahita,Autis'],
-            'tempat_lahir'  => ['nullable', 'string', 'max:100'],
-            'tgl_lahir'     => ['nullable', 'date'],
-            'kelas_id'      => ['nullable', 'exists:kelas,id'],
-            'tingkat'       => ['nullable', 'string', 'max:10'],
-            'fase'          => ['nullable', 'string', 'max:10'],
-            'is_aktif'      => ['nullable', 'boolean'],
-        ], [
-            'nama_lengkap.required' => 'Nama lengkap siswa wajib diisi.',
-            'nisn.required'         => 'NISN wajib diisi.',
-            'kekhususan.required'   => 'Jenis kekhususan wajib dipilih.',
-            'kekhususan.in'         => 'Jenis kekhususan harus salah satu dari: Tunarungu, Tunagrahita, atau Autis.',
-        ]);
-
-        $siswa->update([
-            'nama_lengkap'  => $validated['nama_lengkap'],
-            'nisn'          => $validated['nisn'],
-            'jenis_kelamin' => $validated['jenis_kelamin'],
-            'kekhususan'    => $validated['kekhususan'],
-            'tempat_lahir'  => $validated['tempat_lahir'] ?? $siswa->tempat_lahir,
-            'tgl_lahir'     => $validated['tgl_lahir'] ?? $siswa->tgl_lahir,
-            'is_aktif'      => $request->has('is_aktif') ? $request->boolean('is_aktif') : $siswa->is_aktif,
-        ]);
-
-        // Perbarui penugasan kelas jika ada
-        $tahunAktif = TahunAjaran::getAktif();
-        if (! empty($validated['kelas_id']) && $tahunAktif) {
-            PenugasanSiswaKelas::updateOrCreate(
-                [
-                    'siswa_id'        => $siswa->id,
-                    'tahun_ajaran_id' => $tahunAktif->id,
-                ],
-                [
-                    'kelas_id' => $validated['kelas_id'],
-                    'tingkat'  => $validated['tingkat'] ?? 'VII',
-                    'fase'     => $validated['fase'] ?? 'D',
-                ]
-            );
-        }
-
-        ActivityLog::log("Memperbarui data siswa: {$siswa->nama_lengkap}", $siswa, 'Sukses');
-
-        return redirect()->route('admin.siswa.index')
-            ->with('success', "Data siswa {$siswa->nama_lengkap} berhasil diperbarui.");
-    }
-
-    /**
-     * Hapus data siswa dari sistem (dengan verifikasi 2 langkah).
-     */
-    public function destroy(Request $request, $id): RedirectResponse
-    {
-        $siswa = Siswa::findOrFail($id);
-        $namaSiswa = $siswa->nama_lengkap;
-
-        // Hapus penugasan dan relasi terkait
-        $siswa->penugasanKelas()->delete();
-        $siswa->delete();
-
-        ActivityLog::log("Menghapus data siswa: {$namaSiswa}", null, 'Sukses');
-
-        return redirect()->route('admin.siswa.index')
-            ->with('success', "Data siswa {$namaSiswa} berhasil dihapus dari sistem.");
-    }
-
-    /**
-     * Tampilkan detail siswa.
-     */
-    public function show($id): View
-    {
-        $tahunAktif = TahunAjaran::getAktif();
-        $siswa = Siswa::with(['orangTua', 'penugasanKelas.kelas'])->find($id);
-
-        return view('admin.siswa.detail', compact('tahunAktif', 'id', 'siswa'));
+        $siswa=Siswa::with(['orangTua','penugasanKelas.kelas','penugasanKelas.tahunAjaran','rapor.tahunAjaran'])->findOrFail($id);
+        $periode=TahunAjaran::getAktif();
+        $history=$siswa->rapor->map(fn($r)=>['rapor'=>$r,'data'=>$reports->data($siswa,$r->tahunAjaran,$r)]);
+        return view('academic.student-detail',compact('siswa','periode','history'));
     }
 }

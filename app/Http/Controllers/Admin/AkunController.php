@@ -54,7 +54,7 @@ class AkunController extends Controller
                 'role'       => $roleLabel,
                 'role_raw'   => $u->role,
                 'status'     => $u->is_aktif ? 'Aktif' : 'Tidak aktif',
-                'last_login' => 'Hari ini, ' . now()->format('H.i'),
+                'last_login' => ActivityLog::where('user_id',$u->id)->where('subjek','Login ke sistem')->latest()->first()?->created_at?->format('d-m-Y H:i') ?? 'Belum tercatat',
                 'guru'       => $u->guru?->nama_lengkap,
                 'raw'        => $u,
             ];
@@ -68,9 +68,9 @@ class AkunController extends Controller
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
             'role'     => 'required|in:admin,kepala_sekolah,wali_kelas',
-            'guru_id'  => 'nullable|exists:guru,id',
+            'guru_id'  => 'nullable|required_if:role,wali_kelas|exists:guru,id|unique:users,guru_id',
         ]);
 
         $user = User::create([
@@ -106,17 +106,13 @@ class AkunController extends Controller
     public function resetPassword(Request $request, int $id): RedirectResponse
     {
         $user = User::findOrFail($id);
-        $user->update(['password' => Hash::make('password')]);
-
-        ActivityLog::log('Reset password akun: ' . $user->email, null, 'Sukses');
-
-        return redirect()->route('admin.akun.index')
-            ->with('success', 'Password akun ' . $user->email . ' berhasil direset menjadi "password".');
+        return redirect()->route('admin.akun.edit',$user->id)->with('info','Isi password baru dan konfirmasinya untuk mereset akun.');
     }
 
     public function toggleStatus(Request $request, int $id): RedirectResponse
     {
         $user = User::findOrFail($id);
+        if ($user->id === auth()->id()) return back()->with('error','Akun yang sedang digunakan tidak dapat dinonaktifkan.');
         $user->update(['is_aktif' => !$user->is_aktif]);
 
         ActivityLog::log('Mengubah status aktif akun: ' . $user->email, null, 'Sukses');

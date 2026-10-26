@@ -31,7 +31,7 @@ class DashboardController extends Controller
         $penyelesaianKelas = [];
 
         foreach ($kelasList as $k) {
-            $siswaIdsInKelas = Siswa::where('kekhususan', $k->kekhususan)->pluck('id');
+            $siswaIdsInKelas = Siswa::whereHas('penugasanKelas', fn($q) => $q->where('kelas_id',$k->id)->where('tahun_ajaran_id',$tahunId))->pluck('id');
             $jmlSiswa = $siswaIdsInKelas->count();
             $approvedInKelas = Rapor::where('tahun_ajaran_id', $tahunId)
                 ->whereIn('siswa_id', $siswaIdsInKelas)
@@ -90,7 +90,7 @@ class DashboardController extends Controller
         foreach ($dbLogs as $log) {
             $aktivitasTerbaru[] = [
                 'waktu'     => $log->created_at ? $log->created_at->diffForHumans() : 'Baru saja',
-                'aktivitas' => $log->deskripsi,
+                'aktivitas' => $log->subjek,
                 'oleh'      => $log->user?->name ?? 'Sistem',
                 'status'    => $log->status ?? 'Sukses',
             ];

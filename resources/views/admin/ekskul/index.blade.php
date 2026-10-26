@@ -23,7 +23,8 @@
         }
     }">
 
-        <!-- Page Header -->
+        <a href="{{ route('admin.ekskul.penugasan') }}" class="inline-flex px-4 py-2 bg-[#555783] text-white rounded-xl">Penugasan siswa dan pembimbing</a>
+    <!-- Page Header -->
         <x-page-header
             breadcrumb="Admin / Ekstrakurikuler"
             title="Ekstrakurikuler"

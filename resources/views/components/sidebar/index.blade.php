@@ -2,7 +2,7 @@
     <div class="px-3.5 py-5 flex-1">
         <!-- Brand Header -->
         <a href="{{ route('admin.dashboard') }}" class="flex items-center gap-3 px-1.5 mb-3 group">
-            <img src="{{ asset('images/logo-slb.png') }}" alt="Logo SLB Insan Mutiara" class="w-9 h-9 object-contain shrink-0 rounded-full group-hover:scale-105 transition-transform" />
+            <img src="{{ route('school.logo') }}" alt="Logo SLB Insan Mutiara" class="w-9 h-9 object-contain shrink-0 rounded-full group-hover:scale-105 transition-transform" />
             <div class="leading-tight">
                 <div class="text-[13px] font-semibold text-white tracking-tight">E-Rapor</div>
                 <div class="text-[13px] font-bold text-white tracking-tight">SLB Insan Mutiara</div>

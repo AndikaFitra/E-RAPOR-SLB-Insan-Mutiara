@@ -21,12 +21,13 @@ class Rapor extends Model
         'tgl_rapor',
         'tgl_pengajuan',
         'tgl_persetujuan',
-        'pdf_path',
+        'pdf_path', 'snapshot', 'share_token', 'keputusan',
     ];
 
     protected function casts(): array
     {
         return [
+            'snapshot' => 'array',
             'tgl_rapor'       => 'date',
             'tgl_pengajuan'   => 'datetime',
             'tgl_persetujuan' => 'datetime',
