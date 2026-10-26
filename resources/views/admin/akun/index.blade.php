@@ -17,13 +17,12 @@
 
     <div x-data="{
         showCreateModal: false,
-        deleteModal: false,
-        deleteAction: '',
-        deleteName: '',
         openDelete(id, name) {
-            this.deleteAction = '{{ url('admin/akun') }}/' + id;
-            this.deleteName = name;
-            this.deleteModal = true;
+            this.$dispatch('open-delete-modal', {
+                name: name,
+                details: 'Akun pengguna',
+                action: '{{ url('admin/akun') }}/' + id
+            });
         }
     }">
 
@@ -89,59 +88,61 @@
         <!-- Table of Users -->
         <x-card class="mb-6 p-0 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
+                <table class="w-full min-w-[1140px] table-fixed text-left border-collapse text-[13px]">
+                    <colgroup>
+                        <col class="w-[17%]"><col class="w-[26%]"><col class="w-[14%]">
+                        <col class="w-[14%]"><col class="w-[9%]"><col class="w-[20%]">
+                    </colgroup>
                     <thead>
-                        <tr class="bg-[#F7F6F2] text-[#1A1A2E] font-semibold border-b border-[#E8E7ED]">
-                            <th class="py-3.5 px-6">Nama pengguna</th>
-                            <th class="py-3.5 px-4">Username / Email</th>
-                            <th class="py-3.5 px-4">Hak akses (Role)</th>
-                            <th class="py-3.5 px-4">Guru Terhubung</th>
-                            <th class="py-3.5 px-4">Status</th>
-                            <th class="py-3.5 px-6 text-right">Aksi</th>
+                        <tr class="bg-[#F7F6F2] text-[#555783] text-[12px] font-bold border-b border-[#E8E7ED]">
+                            <th scope="col" class="px-5 py-4">Nama pengguna</th>
+                            <th scope="col" class="px-5 py-4">Username / Email</th>
+                            <th scope="col" class="px-4 py-4">Hak akses</th>
+                            <th scope="col" class="px-4 py-4">Guru terkait</th>
+                            <th scope="col" class="px-4 py-4">Status</th>
+                            <th scope="col" class="px-4 py-4 text-center">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100">
+                    <tbody class="divide-y divide-[#E8E7ED]">
                         @forelse($akunList as $u)
-                            <tr class="hover:bg-[#FBFBFA] transition-colors">
-                                <td class="py-4 px-6 font-bold text-[#1A1A2E]">
-                                    {{ $u['name'] }}
+                            <tr class="align-middle hover:bg-[#FBFBFA] transition-colors">
+                                <td class="px-5 py-4">
+                                    <div class="flex items-center gap-3 min-w-0">
+                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EEEEF5] text-[#555783] font-bold" aria-hidden="true">{{ strtoupper(substr($u['name'], 0, 1)) }}</span>
+                                        <span class="font-semibold leading-5 text-[#1A1A2E] break-words">{{ $u['name'] }}</span>
+                                    </div>
                                 </td>
-                                <td class="py-4 px-4 text-gray-600">
-                                    <span class="font-medium text-gray-800">{{ $u['username'] }}</span> · {{ $u['email'] }}
+                                <td class="px-5 py-4">
+                                    <span class="block font-semibold text-[#1A1A2E]">{{ $u['username'] }}</span>
+                                    <span class="mt-1 block break-all text-[12px] leading-5 text-gray-500" title="{{ $u['email'] }}">{{ $u['email'] }}</span>
                                 </td>
-                                <td class="py-4 px-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold {{ $u['role'] === 'Admin' ? 'bg-purple-50 text-purple-700' : ($u['role'] === 'Kepala Sekolah' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700') }}">
+                                <td class="px-4 py-4">
+                                    <span class="inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold whitespace-nowrap {{ $u['role'] === 'Admin' ? 'bg-purple-50 text-purple-700' : ($u['role'] === 'Kepala Sekolah' ? 'bg-amber-50 text-amber-700' : 'bg-indigo-50 text-indigo-700') }}">
                                         {{ $u['role'] }}
                                     </span>
                                 </td>
-                                <td class="py-4 px-4 text-gray-600">
-                                    {{ $u['guru'] ?: '—' }}
+                                <td class="px-4 py-4 leading-5 text-gray-600">
+                                    {{ $u['guru'] ?: 'Belum terhubung' }}
                                 </td>
-                                <td class="py-4 px-4 font-semibold {{ $u['status'] === 'Aktif' ? 'text-[#16A34A]' : 'text-rose-600' }}">
-                                    <span class="inline-flex px-2 py-0.5 rounded text-[11px] font-semibold {{ $u['status'] === 'Aktif' ? 'bg-emerald-50 text-[#16A34A]' : 'bg-rose-50 text-rose-600' }}">
+                                <td class="px-4 py-4">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap {{ $u['status'] === 'Aktif' ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">
+                                        <span class="h-1.5 w-1.5 rounded-full {{ $u['status'] === 'Aktif' ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
                                         {{ $u['status'] }}
                                     </span>
                                 </td>
-                                <td class="py-4 px-6 text-right space-x-2">
-                                    <a href="{{ route('admin.akun.edit', $u['id']) }}" class="text-[#555783] underline">Edit akun</a>
-                                    <form method="POST" action="{{ route('admin.akun.toggle-status', $u['id']) }}" class="inline">
-                                        @csrf
-                                        <button type="submit" class="text-gray-700 hover:text-[#555783] font-semibold text-xs transition-colors cursor-pointer">
-                                            {{ $u['status'] === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan' }}
-                                        </button>
-                                    </form>
-                                    <span class="text-gray-300">·</span>
-                                    <a href="{{ route('admin.akun.edit',$u['id']) }}" class="text-amber-700">Atur password</a>
-                                    @if($u['id'] !== auth()->id())
-                                        <span class="text-gray-300">·</span>
-                                        <button
-                                            type="button"
-                                            @click="openDelete({{ $u['id'] }}, '{{ addslashes($u['email']) }}')"
-                                            class="text-rose-600 hover:text-rose-800 font-semibold text-xs transition-colors cursor-pointer"
-                                        >
-                                            Hapus
-                                        </button>
-                                    @endif
+                                <td class="px-4 py-4">
+                                    <div class="grid grid-cols-2 gap-2 text-center text-[11px] font-semibold">
+                                        <a href="{{ route('admin.akun.edit', $u['id']) }}" class="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#D8DAE4] bg-white px-2 text-[#555783] hover:bg-[#F3F2F8] transition-colors">Edit akun</a>
+                                        <a href="{{ route('admin.akun.edit', $u['id']) }}" class="inline-flex min-h-9 items-center justify-center rounded-lg border border-[#D8DAE4] bg-white px-2 text-[#555783] hover:bg-[#F3F2F8] transition-colors" title="Atur password akun">Password</a>
+                                        @if($u['id'] !== auth()->id())
+                                            <form method="POST" action="{{ route('admin.akun.toggle-status', $u['id']) }}">@csrf
+                                                <button type="submit" class="flex min-h-9 w-full items-center justify-center whitespace-nowrap rounded-lg border border-[#D8DAE4] bg-[#F7F6F2] px-1 text-center text-gray-700 hover:bg-[#ECEAE5] transition-colors">{{ $u['status'] === 'Aktif' ? 'Nonaktifkan' : 'Aktifkan' }}</button>
+                                            </form>
+                                            <button type="button" data-email="{{ $u['email'] }}" @click="openDelete({{ $u['id'] }}, $el.dataset.email)" class="min-h-9 rounded-lg border border-rose-200 bg-rose-50 px-2 text-rose-700 hover:bg-rose-100 transition-colors">Hapus</button>
+                                        @else
+                                            <span class="col-span-2 self-center text-[11px] font-normal text-gray-400">Akun yang sedang digunakan</span>
+                                        @endif
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -207,8 +208,8 @@
                             type="password"
                             name="password"
                             required
-                            minlength="6"
-                            placeholder="Minimal 6 karakter"
+                            minlength="8"
+                            placeholder="Minimal 8 karakter"
                             class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]"
                         />
                     </div>

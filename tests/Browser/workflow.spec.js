@@ -30,6 +30,38 @@ test('admin navigation works on desktop and mobile', async ({ page }) => {
     await page.screenshot({ path:'storage/framework/testing/admin-mobile.png',fullPage:true });
     expect(errors).toEqual([]);
 });
+
+test('account table keeps actions aligned and opens delete confirmation', async ({page}) => {
+    await login(page, 'admin');
+    await page.setViewportSize({width:1600,height:900});
+    await page.goto('/admin/akun');
+    const row = page.locator('table tbody tr', {hasText:'Ahmad Fauzi'});
+    await expect(row.getByRole('link',{name:'Edit akun'})).toBeVisible();
+    await expect(row.getByRole('link',{name:'Password'})).toBeVisible();
+    await expect(row.getByRole('button',{name:'Nonaktifkan'})).toBeVisible();
+    await row.getByRole('button',{name:'Hapus'}).click();
+    await expect(page.getByText('Hapus Akun Pengguna')).toBeVisible();
+    await expect(page.locator('p[x-text="itemName"]')).toHaveText('ahmadfauzi@slbinsanmutiara.sch.id');
+    await page.getByRole('button',{name:'Batal'}).click();
+    await expect(page.getByText('Hapus Akun Pengguna')).toBeHidden();
+    await page.screenshot({path:'storage/framework/testing/akun-desktop.png',fullPage:true});
+    await page.setViewportSize({width:390,height:844});
+    await page.goto('/admin/akun');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.screenshot({path:'storage/framework/testing/akun-mobile.png',fullPage:true});
+});
+test('archive table shows report links and stays within mobile viewport', async ({page}) => {
+    await login(page, 'admin');
+    await page.setViewportSize({width:1600,height:900});
+    await page.goto('/admin/arsip');
+    await expect(page.locator('.archive-table tbody tr').first()).toBeVisible();
+    await expect(page.locator('.archive-table').getByRole('link',{name:'Detail semester'}).first()).toHaveAttribute('href', /reports|dokumen-rapor|rapor/);
+    await expect(page.locator('.archive-table').getByRole('link',{name:'PDF'}).first()).toHaveAttribute('href', /pdf=1/);
+    await page.screenshot({path:'storage/framework/testing/arsip-desktop.png',fullPage:true});
+    await page.setViewportSize({width:390,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.screenshot({path:'storage/framework/testing/arsip-mobile.png',fullPage:true});
+});
 test('wali can save class scores and cancel leaving unsaved changes', async ({ page }) => {
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));
