@@ -238,4 +238,26 @@ class ReportWorkflowTest extends TestCase
         $this->year->update(['is_aktif'=>false]);
         $this->post(route('kepala.persetujuan.return-legacy',$this->report->id), ['catatan_revisi'=>'Periode harus aktif dahulu.'])->assertStatus(422);
     }
+
+    public function test_shared_back_navigation_uses_role_and_page_context(): void
+    {
+        foreach ([
+            [$this->admin, 'admin.dashboard', 'admin.arsip.index'],
+            [$this->wali, 'wali.dashboard', 'wali.arsip.index'],
+            [$this->kepala, 'kepala.dashboard', 'kepala.arsip.index'],
+        ] as [$user, $dashboard, $archive]) {
+            $this->actingAs($user)->get(route($dashboard))->assertOk()->assertDontSee('aria-label="Kembali ke', false);
+            $this->get(route($archive))->assertOk()->assertSee('aria-label="Kembali ke Beranda"', false)
+                ->assertSee('href="'.route($dashboard).'"', false);
+            $this->get(route('reports.show', ['id'=>$this->report->id, 'from'=>'arsip', 'tahun_ajaran_id'=>$this->year->id]))
+                ->assertOk()->assertSee('aria-label="Kembali ke Arsip"', false)
+                ->assertSee(route($archive, ['tahun_ajaran_id'=>$this->year->id]), false);
+        }
+        $this->actingAs($this->admin)->get(route('admin.siswa.edit', $this->student->id))
+            ->assertOk()->assertSee('aria-label="Kembali ke Data siswa"', false);
+        $this->actingAs($this->wali)->get(route('wali.rapor.show', $this->student->id))
+            ->assertOk()->assertSee('aria-label="Kembali ke Rapor saya"', false);
+        $this->actingAs($this->kepala)->get(route('reports.show', $this->report->id))
+            ->assertOk()->assertSee('aria-label="Kembali ke Persetujuan rapor"', false);
+    }
 }

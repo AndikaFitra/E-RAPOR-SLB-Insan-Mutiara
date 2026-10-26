@@ -14,10 +14,12 @@ test('admin navigation works on desktop and mobile', async ({ page }) => {
         const response = await page.goto(url);
         expect(response.status()).toBe(200);
     }
+    await page.goto('/admin/penugasan');
+    await expect(page.getByRole('link',{name:'Kembali ke Kelas'})).toHaveAttribute('href', /\/admin\/kelas$/);
     await page.screenshot({ path:'storage/framework/testing/admin-desktop.png',fullPage:true });
     await page.setViewportSize({ width:390,height:844 });
     await page.goto('/admin/penugasan');
-    const menu=page.getByRole('button',{name:'Buka menu'});
+    const menu=page.getByRole('button',{name:'Buka menu',exact:true});
     await expect(menu).toBeVisible();
     await menu.click();
     await expect(page.locator('body')).toHaveClass(/menu-open/);
@@ -33,6 +35,7 @@ test('wali can save class scores and cancel leaving unsaved changes', async ({ p
     page.on('pageerror',e=>errors.push(e.message));
     await login(page,'rinapratiwi');
     await page.goto('/wali-kelas/nilai-asesmen');
+    await expect(page.getByRole('link',{name:'Kembali ke Beranda'})).toBeVisible();
     await page.getByRole('link',{name:'Input / edit nilai'}).first().click();
     const score=page.locator('input[type=number]:enabled').first();
     await score.fill('42');
@@ -52,6 +55,7 @@ test('wali can save class scores and cancel leaving unsaved changes', async ({ p
 test('kepala can export the filtered ledger',async ({page})=>{
     await login(page,'kepsek');
     await page.goto('/kepala-sekolah/leger');
+    await expect(page.getByRole('link',{name:'Kembali ke Beranda'})).toBeVisible();
     await expect(page.getByText('Kriteria ketuntasan belum ditetapkan oleh sekolah.',{exact:false})).toBeVisible();
     await page.locator('[name=maksimum]').fill('100');
     await page.getByRole('button',{name:'Terapkan filter'}).click();

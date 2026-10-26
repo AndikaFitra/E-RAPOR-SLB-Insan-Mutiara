@@ -8,14 +8,20 @@
 $periode = \App\Models\TahunAjaran::getAktif()?->label ?? 'Belum ada periode aktif';
 $userName = auth()->user()?->name ?? 'Pengguna';
 $status = \App\Models\TahunAjaran::getAktif() ? 'Aktif' : null;
+$back = \App\Support\BackNavigation::current();
 @endphp
 <header class="h-16 bg-white border-b border-[#E8E7ED] px-8 flex items-center justify-between sticky top-0 z-30">
     <button type="button" class="mobile-menu-button" aria-label="Buka menu" onclick="document.body.classList.toggle('menu-open')">Menu</button>
     <!-- Active Academic Period -->
-    <div class="flex items-center gap-2.5">
-        <span class="text-[14px] font-semibold text-[#1A1A2E]">{{ $periode }}</span>
+    <div class="topbar-period flex min-w-0 items-center gap-2.5">
+        @if($back)
+            <a href="{{ $back['url'] }}" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E8E7ED] text-[#555783] transition-colors hover:border-[#555783] hover:bg-[#F3F2F8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#555783]" aria-label="Kembali ke {{ $back['label'] }}" title="Kembali ke {{ $back['label'] }}">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m7 7-7-7 7-7"/></svg>
+            </a>
+        @endif
+        <span class="topbar-period-label text-[14px] font-semibold text-[#1A1A2E]">{{ $periode }}</span>
         @if($status)
-            <span class="inline-flex items-center gap-1.5 text-[12px] font-medium text-[#16A34A]">
+            <span class="topbar-status inline-flex items-center gap-1.5 text-[12px] font-medium text-[#16A34A]">
                 <span class="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
                 {{ $status }}
             </span>
@@ -26,8 +32,10 @@ $status = \App\Models\TahunAjaran::getAktif() ? 'Aktif' : null;
     <div class="relative" x-data="{ open: false }" @click.outside="open = false">
         <button type="button"
                 @click="open = !open"
+                aria-label="Buka menu akun"
                 class="flex items-center gap-1.5 cursor-pointer select-none text-[14px] font-medium text-[#1A1A2E] hover:text-[#555783] transition-colors focus:outline-none">
-            <span>{{ $userName }}</span>
+            <svg class="topbar-user-icon h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 20a7.5 7.5 0 0115 0"/></svg>
+            <span class="topbar-user-name">{{ $userName }}</span>
             <svg class="w-4 h-4 text-gray-500 transition-transform duration-150" :class="{ 'rotate-180': open }" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
             </svg>
