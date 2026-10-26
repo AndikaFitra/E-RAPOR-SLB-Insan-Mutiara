@@ -47,6 +47,25 @@ body {
 .academic-content .btn-secondary { background:white; color:#555783; border:1px solid #d8dae4; }
 .academic-content .review-action { min-width:156px; height:46px; text-align:center; }
 .academic-content .link { color:#555783; text-decoration:underline; text-underline-offset:3px; }
+.academic-content .archive-panel { padding:20px; }
+.academic-content .archive-scroll-hint { display:none; margin:0 0 12px; color:#6b7280; font-size:12px; }
+.academic-content .archive-scroll { overflow-x:auto; }
+.academic-content .archive-table { min-width:850px; table-layout:fixed; }
+.academic-content .archive-table th { padding:15px 16px; font-size:12px; font-weight:700; }
+.academic-content .archive-table td { padding:15px 16px; vertical-align:middle; line-height:1.5; }
+.academic-content .archive-table tbody tr:hover { background:#fbfbfa; }
+.academic-content .archive-table tbody tr:last-child td { border-bottom:0; }
+.academic-content .archive-student { font-weight:650; color:#1a1a2e; }
+.academic-content .archive-status { display:inline-flex; align-items:center; border-radius:999px; padding:4px 10px; font-size:11px; font-weight:650; white-space:nowrap; }
+.academic-content .archive-status.is-approved { background:#eaf8f0; color:#15803d; }
+.academic-content .archive-status.is-returned { background:#fff1f2; color:#be123c; }
+.academic-content .archive-status.is-submitted { background:#eef0fb; color:#4f55a1; }
+.academic-content .archive-status.is-draft { background:#f2f1ee; color:#666675; }
+.academic-content .archive-actions { display:flex; flex-wrap:wrap; gap:6px; }
+.academic-content .archive-actions a { display:inline-flex; min-height:32px; align-items:center; justify-content:center; border:1px solid #d8dae4; border-radius:8px; padding:5px 9px; color:#555783; font-size:11px; font-weight:650; text-decoration:none; white-space:nowrap; }
+.academic-content .archive-actions a:hover { background:#f3f2f8; }
+.academic-content .archive-actions a:focus-visible { outline:2px solid #555783; outline-offset:2px; }
+.academic-content .archive-empty { padding:28px 16px; text-align:center; color:#6b7280; }
 .academic-content :disabled { opacity:.6; cursor:not-allowed; }
 .academic-content .report-body h3 { font-weight:700; margin-top:20px; margin-bottom:8px; }
 .mobile-menu-button { display:none; }
@@ -63,6 +82,7 @@ body {
     .topbar-user-icon { display:block; }
     .topbar-user-name { display:none; }
     .academic-content .panel { padding:16px; }
+    .academic-content .archive-scroll-hint { display:block; }
 }
 
 .academic-content table.editable-table { min-width:640px; }
