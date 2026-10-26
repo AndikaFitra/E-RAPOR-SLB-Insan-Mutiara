@@ -42,8 +42,8 @@ class OrangTuaController extends Controller
                 'siswa'      => $ot->siswa ? $ot->siswa->nama_lengkap : '—',
                 'hubungan'   => $ot->hubungan ?: 'Orang Tua',
                 'kontak'     => $ot->no_whatsapp ?: '—',
-                'alamat'     => 'Kota Pekanbaru, Riau',
-                'status'     => !empty($ot->no_whatsapp) ? 'Terverifikasi' : 'Perlu Konfirmasi',
+                'alamat'     => $ot->siswa?->alamat ?? 'Belum diisi',
+                'status'     => \App\Services\WhatsAppService::validPhone($ot->no_whatsapp) ? 'Format valid' : 'Perlu Konfirmasi',
                 'raw'        => $ot,
             ];
         }
@@ -56,7 +56,7 @@ class OrangTuaController extends Controller
         $validated = $request->validate([
             'siswa_id'    => 'required|exists:siswa,id',
             'nama'        => 'required|string|max:100',
-            'hubungan'    => 'required|string|max:50',
+            'hubungan'    => 'required|in:Ayah,Ibu,Wali',
             'no_whatsapp' => 'required|string|max:20',
         ]);
 
@@ -65,7 +65,7 @@ class OrangTuaController extends Controller
             'nama'              => $validated['nama'],
             'hubungan'          => $validated['hubungan'],
             'no_whatsapp'       => $validated['no_whatsapp'],
-            'is_penerima_utama' => true,
+            'is_penerima_utama' => !OrangTua::where('siswa_id',$validated['siswa_id'])->where('is_penerima_utama',true)->exists(),
         ]);
 
         ActivityLog::log('Menambahkan data kontak orang tua: ' . $ot->nama, $ot, 'Sukses');
@@ -81,7 +81,7 @@ class OrangTuaController extends Controller
         $validated = $request->validate([
             'siswa_id'    => 'required|exists:siswa,id',
             'nama'        => 'required|string|max:100',
-            'hubungan'    => 'required|string|max:50',
+            'hubungan'    => 'required|in:Ayah,Ibu,Wali',
             'no_whatsapp' => 'required|string|max:20',
         ]);
 
@@ -102,6 +102,7 @@ class OrangTuaController extends Controller
     {
         $ot = OrangTua::findOrFail($id);
         $nama = $ot->nama;
+        if ($ot->distribusi()->exists()) return back()->with('error','Kontak mempunyai riwayat distribusi. Perbaiki kontak melalui Edit.');
         $ot->delete();
 
         ActivityLog::log('Menghapus data orang tua: ' . $nama, null, 'Hapus');

@@ -32,3 +32,35 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: #B0B3CA;
 }
+
+[x-cloak] { display: none !important; }
+.academic-content .panel { background:white; border:1px solid #e8e7ed; border-radius:16px; padding:24px; }
+.academic-content h2 { font-size:18px; font-weight:700; margin-bottom:8px; }
+.academic-content label { display:block; font-size:13px; font-weight:600; }
+.academic-content input:not([type=checkbox]):not([type=hidden]), .academic-content select, .academic-content textarea { display:block; width:100%; padding:10px 12px; margin-top:6px; border:1px solid #d8dae4; border-radius:9px; background:white; font-size:14px; font-weight:400; }
+.academic-content input:focus, .academic-content textarea:focus, .academic-content select:focus { outline:2px solid #555783; outline-offset:2px; }
+.academic-content table { width:100%; border-collapse:collapse; font-size:13px; }
+.academic-content th, .academic-content td { text-align:left; padding:14px 10px; border-bottom:1px solid #e8e7ed; vertical-align:top; }
+.academic-content th { background:#f7f6f2; color:#555783; }
+.academic-content .btn,.academic-content .btn-secondary { display:inline-flex; align-items:center; justify-content:center; padding:10px 16px; border-radius:10px; font-size:13px; font-weight:600; white-space:nowrap; cursor:pointer; }
+.academic-content .btn { background:#555783; color:white; border:1px solid #555783; }
+.academic-content .btn-secondary { background:white; color:#555783; border:1px solid #d8dae4; }
+.academic-content .review-action { min-width:156px; height:46px; text-align:center; }
+.academic-content .link { color:#555783; text-decoration:underline; text-underline-offset:3px; }
+.academic-content :disabled { opacity:.6; cursor:not-allowed; }
+.academic-content .report-body h3 { font-weight:700; margin-top:20px; margin-bottom:8px; }
+.mobile-menu-button { display:none; }
+@media (max-width:767px) {
+    .mobile-menu-button { display:block; border:1px solid #ddd; border-radius:8px; padding:6px 10px; margin-right:8px; }
+    body > aside, body > div > aside { position:fixed !important; left:0; top:64px; z-index:45; height:calc(100vh - 64px) !important; min-height:0 !important; display:none; box-shadow:8px 0 24px #0002; }
+    body.menu-open > aside, body.menu-open > div > aside { display:flex; }
+    body > div > main, main { padding:18px !important; }
+    header { padding-left:12px !important; padding-right:12px !important; }
+    header span { font-size:11px !important; }
+    .academic-content .panel { padding:16px; }
+}
+
+.academic-content table.editable-table { min-width:640px; }
+.academic-content .editable-table input[type=number] { min-width:90px; }
+.academic-content .editable-table select { min-width:90px; }
+.academic-content .editable-table textarea { min-width:240px; }

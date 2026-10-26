@@ -145,6 +145,10 @@ class GuruController extends Controller
     {
         $guru = Guru::findOrFail($id);
         $nama = $guru->nama_lengkap;
+        if ($guru->user || $guru->penugasanWaliKelas()->exists() || $guru->penugasanPembimbing()->exists()
+            || \Illuminate\Support\Facades\DB::table('penugasan_ekstrakurikuler')->where('guru_id', $id)->exists()) {
+            return back()->with('error', 'Guru tidak dapat dihapus karena masih terkait akun atau penugasan.');
+        }
         $guru->delete();
 
         ActivityLog::log('Menghapus data guru: ' . $nama, null, 'Hapus');

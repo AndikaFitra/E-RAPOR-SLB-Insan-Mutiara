@@ -58,32 +58,32 @@
     <!-- Top floating Demo State Switcher for Evaluator (Non-intrusive) -->
     <div class="fixed top-3 right-3 z-50 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E8E7ED] shadow-sm text-xs">
         <span class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider mr-1">Preview 1:1:</span>
-        <button type="button" @click="setDemo('', ''); isCenteredLayout = false;" 
+        <button type="button" @click="setDemo('', ''); isCenteredLayout = false;"
             class="px-2 py-0.5 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium"
             :class="!errorType && !status && mode === 'login' && !isCenteredLayout ? 'bg-[#555783] text-white hover:bg-[#484A70]' : ''">
             Selamat Datang
         </button>
-        <button type="button" @click="triggerKredensialSalah()" 
+        <button type="button" @click="triggerKredensialSalah()"
             class="px-2 py-0.5 rounded-md hover:bg-rose-50 text-rose-700 transition-colors font-medium"
             :class="errorType === 'credentials' ? 'bg-rose-100 text-rose-800' : ''">
             Kredensial Salah
         </button>
-        <button type="button" @click="triggerAkunNonaktif()" 
+        <button type="button" @click="triggerAkunNonaktif()"
             class="px-2 py-0.5 rounded-md hover:bg-amber-50 text-amber-700 transition-colors font-medium"
             :class="errorType === 'inactive' ? 'bg-amber-100 text-amber-800' : ''">
             Akun Nonaktif
         </button>
-        <button type="button" @click="mode = 'forgot'; errorType = ''; status = '';" 
+        <button type="button" @click="mode = 'forgot'; errorType = ''; status = '';"
             class="px-2 py-0.5 rounded-md hover:bg-indigo-50 text-indigo-700 transition-colors font-medium"
             :class="mode === 'forgot' ? 'bg-[#555783] text-white hover:bg-[#484A70]' : ''">
             Lupa Password
         </button>
-        <button type="button" @click="triggerSukses()" 
+        <button type="button" @click="triggerSukses()"
             class="px-2 py-0.5 rounded-md hover:bg-emerald-50 text-emerald-700 transition-colors font-medium"
             :class="status === 'sukses' ? 'bg-emerald-100 text-emerald-800' : ''">
             Sukses
         </button>
-        <button type="button" @click="isCenteredLayout = !isCenteredLayout" 
+        <button type="button" @click="isCenteredLayout = !isCenteredLayout"
             class="px-2 py-0.5 rounded-md hover:bg-gray-100 text-gray-600 transition-colors text-[11px] border border-gray-200"
             :title="isCenteredLayout ? 'Tampilkan Mode Split' : 'Tampilkan Mode Centered'">
             <span x-text="isCenteredLayout ? 'Split View' : 'Centered View'"></span>
@@ -104,17 +104,17 @@
             <div class="relative z-10 my-auto text-center">
                 <!-- School Logo -->
                 <div class="flex justify-center mb-6">
-                    <img src="{{ asset('images/logo-slb.png') }}" 
-                         alt="Logo SLB Insan Mutiara" 
+                    <img src="{{ route('school.logo') }}"
+                         alt="Logo SLB Insan Mutiara"
                          class="w-32 h-32 xl:w-36 xl:h-36 object-contain drop-shadow-md">
                 </div>
 
                 <!-- Text Branding -->
                 <p class="text-[11px] xl:text-xs font-semibold uppercase tracking-[0.22em] text-white/70">SEKOLAH LUAR BIASA</p>
                 <h1 class="text-3xl xl:text-4xl font-extrabold text-white mt-1.5 tracking-tight">Insan Mutiara</h1>
-                
+
                 <div class="w-10 h-[2px] bg-white/30 mx-auto my-3.5 rounded-full"></div>
-                
+
                 <p class="text-sm text-white/80 font-medium">Kota Pekanbaru</p>
 
                 <!-- Feature Bullets (Pills) -->
@@ -159,8 +159,8 @@
 
             <!-- Mobile Brand Header (Visible only on small screens) -->
             <div class="lg:hidden text-center mb-6">
-                <img src="{{ asset('images/logo-slb.png') }}" 
-                     alt="Logo SLB Insan Mutiara" 
+                <img src="{{ route('school.logo') }}"
+                     alt="Logo SLB Insan Mutiara"
                      class="w-20 h-20 object-contain mx-auto mb-2 drop-shadow-sm">
                 <h2 class="text-xl font-bold text-[#1A1A2E]">SLB Insan Mutiara</h2>
                 <p class="text-xs text-gray-500">Kota Pekanbaru</p>
@@ -178,7 +178,7 @@
                     <p class="text-sm text-gray-500 mt-1 font-normal">Masuk dengan akun yang diberikan sekolah.</p>
 
                     <!-- Alert: Masuk Berhasil (Identik Masuk · Selamat datang.png) -->
-                    <div x-show="status === 'sukses'" 
+                    <div x-show="status === 'sukses'"
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 -translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
@@ -197,7 +197,7 @@
                     </div>
 
                     <!-- Alert: Kredensial Salah (Identik Masuk · Kredensial salah.png) -->
-                    <div x-show="errorType === 'credentials'" 
+                    <div x-show="errorType === 'credentials'"
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 -translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
@@ -216,7 +216,7 @@
                     </div>
 
                     <!-- Alert: Akun Tidak Aktif (Identik Login · Akun tidak aktif.png) -->
-                    <div x-show="errorType === 'inactive'" 
+                    <div x-show="errorType === 'inactive'"
                          x-transition:enter="transition ease-out duration-200"
                          x-transition:enter-start="opacity-0 -translate-y-2"
                          x-transition:enter-end="opacity-100 translate-y-0"
@@ -247,12 +247,12 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                                     </svg>
                                 </div>
-                                <input type="text" 
-                                       name="username" 
-                                       id="input-username" 
-                                       x-model="username" 
-                                       placeholder="Masukkan username" 
-                                       required 
+                                <input type="text"
+                                       name="username"
+                                       id="input-username"
+                                       x-model="username"
+                                       placeholder="Masukkan username"
+                                       required
                                        autofocus
                                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E8E7ED] bg-[#FAFAFA] text-sm text-[#1A1A2E] placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#555783] focus:ring-1 focus:ring-[#555783] transition-all">
                             </div>
@@ -267,16 +267,16 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                                     </svg>
                                 </div>
-                                <input :type="showPassword ? 'text' : 'password'" 
-                                       name="password" 
-                                       id="input-password" 
-                                       x-model="password" 
-                                       placeholder="Masukkan password" 
+                                <input :type="showPassword ? 'text' : 'password'"
+                                       name="password"
+                                       id="input-password"
+                                       x-model="password"
+                                       placeholder="Masukkan password"
                                        required
                                        class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#E8E7ED] bg-[#FAFAFA] text-sm text-[#1A1A2E] placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#555783] focus:ring-1 focus:ring-[#555783] transition-all">
-                                
-                                <button type="button" 
-                                        @click="showPassword = !showPassword" 
+
+                                <button type="button"
+                                        @click="showPassword = !showPassword"
                                         class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
                                     <svg x-show="!showPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
@@ -295,8 +295,8 @@
                                 <span class="text-xs text-[#4B5563]">Ingat username saya</span>
                             </label>
 
-                            <button type="button" 
-                                    @click="mode = 'forgot'" 
+                            <button type="button"
+                                    @click="mode = 'forgot'"
                                     class="text-xs text-[#555783] hover:underline font-medium focus:outline-none">
                                 Lupa password?
                             </button>
@@ -304,7 +304,7 @@
 
                         <!-- Submit Button -->
                         <div class="pt-2">
-                            <button type="submit" 
+                            <button type="submit"
                                     class="w-full py-3 px-4 rounded-xl bg-[#555783] hover:bg-[#484A70] text-white font-medium text-sm shadow-sm transition-colors flex items-center justify-center space-x-1.5 focus:outline-none focus:ring-2 focus:ring-[#555783]/50">
                                 <span>Masuk ke E-Rapor</span>
                                 <span class="text-base leading-none">&rarr;</span>
@@ -317,37 +317,16 @@
                         </p>
                     </form>
 
-                    <!-- Quick Demo Credentials Selector -->
-                    <div class="mt-6 pt-4 border-t border-[#F0EFEA]">
-                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider text-center mb-2.5">Akses Cepat Pengujian (1-Klik):</p>
-                        <div class="grid grid-cols-3 gap-1.5 text-center">
-                            <button type="button" @click="setDemo('admin', 'password')" 
-                                class="p-1.5 rounded-lg bg-[#F7F6F2] hover:bg-[#ECEBE4] border border-[#E8E7ED] text-gray-700 transition-colors text-[11px]">
-                                <span class="block font-semibold text-[#555783]">Admin</span>
-                                <span class="text-[9px] text-gray-400">admin / pass</span>
-                            </button>
-                            <button type="button" @click="setDemo('kepsek', 'password')" 
-                                class="p-1.5 rounded-lg bg-[#F7F6F2] hover:bg-[#ECEBE4] border border-[#E8E7ED] text-gray-700 transition-colors text-[11px]">
-                                <span class="block font-semibold text-amber-700">Kepsek</span>
-                                <span class="text-[9px] text-gray-400">kepsek / pass</span>
-                            </button>
-                            <button type="button" @click="setDemo('rina.pratiwi', 'password')" 
-                                class="p-1.5 rounded-lg bg-[#F7F6F2] hover:bg-[#ECEBE4] border border-[#E8E7ED] text-gray-700 transition-colors text-[11px]">
-                                <span class="block font-semibold text-teal-700">Wali Kelas</span>
-                                <span class="text-[9px] text-gray-400">rina / pass</span>
-                            </button>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- ══════════════════════════════════════════════════════ -->
                 <!-- STATE 2: BANTUAN LUPA PASSWORD (Identik 1:1)            -->
                 <!-- ══════════════════════════════════════════════════════ -->
-                <div x-show="mode === 'forgot'" 
+                <div x-show="mode === 'forgot'"
                      x-transition:enter="transition ease-out duration-200"
                      x-transition:enter-start="opacity-0 scale-95"
                      x-transition:enter-end="opacity-100 scale-100">
-                    
+
                     <!-- Circular Key Icon -->
                     <div class="w-12 h-12 rounded-full bg-[#EEF0F8] text-[#555783] flex items-center justify-center mb-5">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -371,8 +350,8 @@
 
                     <!-- Action Button -->
                     <div class="mt-6">
-                        <button type="button" 
-                                @click="mode = 'login'" 
+                        <button type="button"
+                                @click="mode = 'login'"
                                 class="w-full py-3 px-4 rounded-xl bg-[#555783] hover:bg-[#484A70] text-white font-medium text-sm shadow-sm transition-colors text-center block focus:outline-none focus:ring-2 focus:ring-[#555783]/50">
                             Kembali ke login
                         </button>
@@ -390,7 +369,7 @@
             <p class="text-xs text-center text-gray-400 mt-5 font-normal">
                 Kesulitan masuk? Hubungi administrator di tata usaha sekolah.
             </p>
-            
+
             <!-- Optional copyright on centered or mobile layout -->
             <p x-show="isCenteredLayout" class="text-xs text-center text-gray-400 mt-1 font-normal lg:block">
                 © 2026 SLB Insan Mutiara Pekanbaru

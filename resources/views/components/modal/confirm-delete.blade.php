@@ -5,6 +5,7 @@
     'itemDetails' => 'NIS 26001 · NISN 0160001001 · Tunarungu A',
     'confirmAction' => '#',
     'confirmMethod' => 'DELETE',
+    'deactivate' => false,
 ])
 
 <div
@@ -77,7 +78,7 @@
 
             <!-- Description -->
             <p class="text-xs text-gray-500 leading-relaxed mb-4">
-                Tindakan ini menghapus data yang dipilih, yaitu <span class="font-semibold text-gray-700" x-text="itemName"></span>. Data lain tidak terpengaruh. Pastikan data yang dipilih sudah benar sebelum melanjutkan.
+                Tindakan ini {{ $deactivate ? 'menonaktifkan siswa' : 'menghapus data yang dipilih' }}, yaitu <span class="font-semibold text-gray-700" x-text="itemName"></span>. {{ $deactivate ? 'Riwayat siswa dan rapor tetap tersimpan.' : 'Data lain tidak terpengaruh.' }} Pastikan data yang dipilih sudah benar sebelum melanjutkan.
             </p>
 
             <!-- 2-Step Verification Checkbox Box (Proteksi Anti Asal-Pencet) -->
@@ -99,7 +100,7 @@
                         class="w-4 h-4 mt-0.5 rounded border-rose-300 text-rose-600 focus:ring-rose-500 cursor-pointer"
                     >
                     <span class="text-xs text-rose-900 leading-snug">
-                        Saya memahami dan menyetujui bahwa data <strong x-text="itemName"></strong> akan dihapus dari sistem.
+                        Saya memahami dan menyetujui bahwa data <strong x-text="itemName"></strong> {{ $deactivate ? 'akan dinonaktifkan dan riwayatnya tetap tersimpan.' : 'akan dihapus dari sistem.' }}
                     </span>
                 </label>
             </div>
@@ -129,7 +130,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                         </svg>
-                        <span>Hapus Permanen</span>
+                        <span>{{ $deactivate ? 'Nonaktifkan siswa' : 'Hapus data' }}</span>
                     </button>
                 </div>
             </form>

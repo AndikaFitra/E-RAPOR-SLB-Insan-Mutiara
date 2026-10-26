@@ -18,20 +18,15 @@ class EkstrakurikulerController extends Controller
         $ekskulModels = Ekstrakurikuler::all();
 
         $ekskulList = [];
-        $defaults = [
-            ['pembimbing' => 'Ahmad Fauzi, S.Pd', 'jadwal' => 'Jumat, 14.00 - 16.00', 'siswa' => 24],
-            ['pembimbing' => 'Siti Nurhaliza, S.Pd', 'jadwal' => 'Sabtu, 09.00 - 11.00', 'siswa' => 16],
-            ['pembimbing' => 'Hendra Saputra, S.Pd', 'jadwal' => 'Selasa, 15.00 - 17.00', 'siswa' => 12],
-        ];
-
         foreach ($ekskulModels as $idx => $e) {
-            $def = $defaults[$idx % count($defaults)];
+            $assignment = \Illuminate\Support\Facades\DB::table('penugasan_ekstrakurikuler')->where('ekstrakurikuler_id',$e->id)->where('tahun_ajaran_id',$tahunAktif?->id)->first();
+            $guru = $assignment ? \App\Models\Guru::find($assignment->guru_id) : null;
             $ekskulList[] = [
                 'id'           => $e->id,
                 'nama'         => $e->nama,
-                'pembimbing'   => $def['pembimbing'],
-                'jadwal'       => $def['jadwal'],
-                'jumlah_siswa' => $def['siswa'],
+                'pembimbing'   => $guru?->nama_lengkap ?? 'Belum ditugaskan',
+                'jadwal'       => $assignment?->jadwal ?? 'Belum ditetapkan',
+                'jumlah_siswa' => $e->siswa()->where('tahun_ajaran_id',$tahunAktif?->id)->count(),
                 'status'       => 'Aktif',
             ];
         }
@@ -71,6 +66,9 @@ class EkstrakurikulerController extends Controller
     {
         $ekskul = Ekstrakurikuler::findOrFail($id);
         $nama = $ekskul->nama;
+        if ($ekskul->siswa()->exists() || \Illuminate\Support\Facades\DB::table('penugasan_ekstrakurikuler')->where('ekstrakurikuler_id',$id)->exists()) {
+            return back()->with('error','Ekstrakurikuler masih digunakan oleh peserta atau pembimbing.');
+        }
         $ekskul->delete();
 
         ActivityLog::log('Menghapus ekstrakurikuler: ' . $nama, null, 'Hapus');

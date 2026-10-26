@@ -105,7 +105,7 @@ class DashboardController extends Controller
         foreach ($dbLogs as $log) {
             $aktivitasTerbaru[] = [
                 'waktu'     => $log->created_at ? $log->created_at->diffForHumans() : 'Baru saja',
-                'aktivitas' => $log->deskripsi,
+                'aktivitas' => $log->subjek,
                 'oleh'      => $log->user?->name ?? 'Admin Sistem',
                 'status'    => $log->status ?? 'Sukses',
             ];

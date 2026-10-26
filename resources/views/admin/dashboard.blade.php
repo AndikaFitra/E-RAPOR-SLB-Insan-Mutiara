@@ -18,8 +18,8 @@
 
     <!-- Hero Banner Card -->
     <x-banner-hero
-        tag="TAHUN AJARAN 2026/2027"
-        title="Semester Ganjil, tersusun lebih terarah."
+        :tag="$tahunAktif?->label ?? 'Belum ada periode aktif'"
+        :title="$tahunAktif ? 'Semester '.$tahunAktif->semester.', tersusun lebih terarah.' : 'Siapkan periode akademik sekolah'"
         description="Pantau kesiapan rapor semester ini. Arsip semester terdahulu tetap tersimpan."
         buttonText="Kelola data siswa"
         :buttonHref="route('admin.siswa.index')"

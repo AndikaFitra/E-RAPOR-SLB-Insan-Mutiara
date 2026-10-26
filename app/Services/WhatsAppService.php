@@ -2,71 +2,41 @@
 
 namespace App\Services;
 
+use App\Models\Rapor;
+
 class WhatsAppService
 {
-    /**
-     * Format Indonesian phone number to standard international format (62...)
-     */
     public static function formatPhoneNumber(?string $number): string
     {
-        if (!$number) {
-            return '';
-        }
-        $cleaned = preg_replace('/[^0-9]/', '', $number);
-        if (str_starts_with($cleaned, '0')) {
-            $cleaned = '62' . substr($cleaned, 1);
-        } elseif (str_starts_with($cleaned, '8')) {
-            $cleaned = '62' . $cleaned;
-        }
+        $cleaned = preg_replace('/[^0-9]/', '', $number ?? '');
+        if (str_starts_with($cleaned, '0')) $cleaned = '62'.substr($cleaned, 1);
+        elseif (str_starts_with($cleaned, '8')) $cleaned = '62'.$cleaned;
         return $cleaned;
     }
 
-    /**
-     * Generate Leger summary message for parents
-     */
-    public static function generateLegerMessage($siswa, $rataRata, $status, $waliKelasNama = 'Rina Pratiwi, S.Pd.', $catatan = null, $kehadiran = null): string
+    public static function validPhone(?string $number): bool
     {
-        $progKhusus = $siswa->program_kekhususan ?? 'Program Kekhususan';
-        $penugasan = $siswa->penugasanAktif();
-        $kelasNama = $penugasan?->kelas?->nama ?? ($siswa->kekhususan . ' A');
-        $tingkat = $penugasan?->tingkat ?? 'VII';
-        $fase = $penugasan?->fase ?? 'D';
-        $sakit = $kehadiran->sakit ?? 0;
-        $izin = $kehadiran->izin ?? 0;
-        $alpa = $kehadiran->alpa ?? 0;
-        $catatanText = $catatan ?: 'Ananda menunjukkan antusiasme belajar dan perkembangan kemandirian yang sangat baik di sekolah.';
-
-        return "*LAPORAN HASIL BELAJAR (LEGER AKADEMIK)*\n"
-             . "*SLB INSAN MUTIARA PEKANBARU*\n"
-             . "Tahun Ajaran: 2026/2027 · Semester Ganjil\n\n"
-             . "Yth. Bapak/Ibu Orang Tua / Wali Murid,\n"
-             . "Berikut kami sampaikan ringkasan hasil belajar ananda:\n\n"
-             . "👤 *Nama Siswa:* " . $siswa->nama_lengkap . "\n"
-             . "🔢 *NISN:* " . $siswa->nisn . "\n"
-             . "🏫 *Kelas / Fase:* " . $kelasNama . " (" . $tingkat . " · Fase " . $fase . ")\n"
-             . "🎯 *Ketunaan:* " . $siswa->kekhususan . "\n"
-             . "📚 *Program Kekhususan:* " . $progKhusus . "\n\n"
-             . "📊 *Rekap Akademik:*\n"
-             . "- Rata-rata Nilai: *" . $rataRata . "*\n"
-             . "- Status: *" . $status . "*\n\n"
-             . "📅 *Kehadiran:*\n"
-             . "- Sakit: " . $sakit . " hari\n"
-             . "- Izin: " . $izin . " hari\n"
-             . "- Tanpa Keterangan: " . $alpa . " hari\n\n"
-             . "📝 *Catatan Wali Kelas:*\n"
-             . "\"" . $catatanText . "\"\n\n"
-             . "Kepala Sekolah: *Novia Parenri, S.Si, M.Si*\n"
-             . "Wali Kelas: *" . $waliKelasNama . "*\n\n"
-             . "_Pesan ini dikirim resmi dari Sistem e-Rapor SLB Insan Mutiara._";
+        return (bool) preg_match('/^628[0-9]{8,11}$/', self::formatPhoneNumber($number));
     }
 
-    /**
-     * Generate clickable https://wa.me deep link
-     */
     public static function generateWaUrl(string $phone, string $message): string
     {
-        $formattedPhone = self::formatPhoneNumber($phone);
-        return 'https://wa.me/' . $formattedPhone . '?text=' . rawurlencode($message);
+        return 'https://wa.me/'.self::formatPhoneNumber($phone).'?text='.rawurlencode($message);
+    }
+
+    public static function raporMessage(Rapor $rapor, string $recipient): string
+    {
+        $data = $rapor->snapshot;
+        if (!$data || !$rapor->share_token || !$rapor->isDisetujui()) return '';
+        return "Yth. Bapak/Ibu {$recipient},\n\nRapor {$data['siswa']['nama_lengkap']} untuk semester {$data['semester']} {$data['tahun']} telah disetujui.\n"
+            ."Silakan unduh dokumen melalui tautan berikut:\n".route('reports.shared', $rapor->share_token)
+            ."\n\nMohon menjaga kerahasiaan tautan rapor ini.\n{$data['sekolah']['nama']}\nWali kelas: {$data['wali']}";
+    }
+
+    public static function generateLegerMessage($siswa, $rataRata, $status, $waliKelasNama = '', $catatan = null, $kehadiran = null): string
+    {
+        $periode = \App\Models\TahunAjaran::getAktif();
+        return "Ringkasan hasil belajar {$siswa->nama_lengkap}\nPeriode: ".($periode?->label ?? '—')
+            ."\nProgram: {$siswa->program_kekhususan}\nKekhususan: {$siswa->kekhususan}\nRata-rata: {$rataRata}\nStatus: {$status}\nWali kelas: {$waliKelasNama}\nCatatan: ".($catatan ?? '—');
     }
 }
-

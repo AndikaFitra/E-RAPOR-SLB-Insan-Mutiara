@@ -1,0 +1,3 @@
+<table><thead><tr><th>Siswa</th><th>Kelas / tingkat / fase</th>@foreach($subjects as $m)<th>{{ $m['nama'] }}</th>@endforeach<th>Rata-rata</th><th>Status</th></tr></thead><tbody>
+@forelse($rows as $row)<tr><td>{{ $row['data']['siswa']['nama_lengkap'] }}<br>{{ $row['data']['siswa']['nisn'] }}</td><td>{{ $row['data']['kelas'] }} / {{ $row['data']['tingkat'] }} / {{ $row['data']['fase'] }}</td>@foreach($subjects as $m)<td>{{ collect($row['data']['nilai'])->firstWhere('id', $m['id'])['nilai'] ?? '—' }}</td>@endforeach<td>{{ $row['rata'] !== null ? number_format($row['rata'], 2, ',', '.') : '—' }}</td><td>{{ $row['status'] }}</td></tr>@empty<tr><td colspan="{{ $subjects->count()+4 }}">Tidak ada data sesuai filter.</td></tr>@endforelse
+</tbody></table>

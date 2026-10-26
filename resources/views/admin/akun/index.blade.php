@@ -123,6 +123,7 @@
                                     </span>
                                 </td>
                                 <td class="py-4 px-6 text-right space-x-2">
+                                    <a href="{{ route('admin.akun.edit', $u['id']) }}" class="text-[#555783] underline">Edit akun</a>
                                     <form method="POST" action="{{ route('admin.akun.toggle-status', $u['id']) }}" class="inline">
                                         @csrf
                                         <button type="submit" class="text-gray-700 hover:text-[#555783] font-semibold text-xs transition-colors cursor-pointer">
@@ -130,12 +131,7 @@
                                         </button>
                                     </form>
                                     <span class="text-gray-300">·</span>
-                                    <form method="POST" action="{{ route('admin.akun.reset-password', $u['id']) }}" class="inline" onsubmit="return confirm('Reset password akun {{ $u['email'] }} menjadi \'password\'?')">
-                                        @csrf
-                                        <button type="submit" class="text-amber-700 hover:text-amber-900 font-semibold text-xs transition-colors cursor-pointer">
-                                            Reset
-                                        </button>
-                                    </form>
+                                    <a href="{{ route('admin.akun.edit',$u['id']) }}" class="text-amber-700">Atur password</a>
                                     @if($u['id'] !== auth()->id())
                                         <span class="text-gray-300">·</span>
                                         <button

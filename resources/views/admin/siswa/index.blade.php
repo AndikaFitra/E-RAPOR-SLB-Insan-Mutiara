@@ -164,7 +164,7 @@
                                         })"
                                         class="text-rose-600 hover:text-rose-800 font-semibold transition-colors cursor-pointer"
                                     >
-                                        Hapus
+                                        Nonaktifkan
                                     </button>
                                 </div>
                             </td>
@@ -190,7 +190,8 @@
 
     <!-- Reusable Modal Confirm Delete dengan 2 Langkah Verifikasi -->
     <x-modal.confirm-delete
-        title="Hapus data siswa?"
+        title="Nonaktifkan siswa?"
+        :deactivate="true"
         itemName="Alya Putri"
         itemDetails="NIS 26001 · NISN 0160001001 · Tunarungu A"
         confirmAction="#"

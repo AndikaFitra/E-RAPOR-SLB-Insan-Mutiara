@@ -4,7 +4,13 @@
     'userName' => 'Admin Sekolah',
 ])
 
+@php
+$periode = \App\Models\TahunAjaran::getAktif()?->label ?? 'Belum ada periode aktif';
+$userName = auth()->user()?->name ?? 'Pengguna';
+$status = \App\Models\TahunAjaran::getAktif() ? 'Aktif' : null;
+@endphp
 <header class="h-16 bg-white border-b border-[#E8E7ED] px-8 flex items-center justify-between sticky top-0 z-30">
+    <button type="button" class="mobile-menu-button" aria-label="Buka menu" onclick="document.body.classList.toggle('menu-open')">Menu</button>
     <!-- Active Academic Period -->
     <div class="flex items-center gap-2.5">
         <span class="text-[14px] font-semibold text-[#1A1A2E]">{{ $periode }}</span>
@@ -43,6 +49,7 @@
                 <p class="text-[11px] text-gray-400 truncate">{{ auth()->user()->email ?? 'admin@slbinsanmutiara.sch.id' }}</p>
             </div>
 
+            @if(auth()->user()?->role === 'admin')
             <a href="{{ route('admin.akun.index') }}"
                class="flex items-center gap-2 px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-[#555783] transition-colors">
                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,6 +68,7 @@
 
             <div class="my-1 border-t border-gray-100"></div>
 
+            @endif
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
                 <button type="submit"
