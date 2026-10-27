@@ -1,7 +1,7 @@
 <x-academic-layout title="Evaluasi Non-Akademik" :periode="$periode">
     @if(!$selected)
         <form method="GET" class="panel flex gap-3"><input name="search" aria-label="Cari siswa" placeholder="Cari siswa atau NISN" value="{{ request('search') }}"><button class="btn">Cari</button></form>
-        <div class="panel"><table><thead><tr><th>Siswa</th><th>NISN</th><th>Aksi</th></tr></thead><tbody>
+        <div class="panel overflow-x-auto"><table class="dashboard-table dashboard-table--medium"><thead><tr><th>Siswa</th><th>NISN</th><th>Aksi</th></tr></thead><tbody>
         @forelse($students as $s)<tr><td>{{ $s->nama_lengkap }}</td><td>{{ $s->nisn }}</td><td><a class="link" href="{{ route('wali.nonakademik.index', ['siswa_id' => $s->id]) }}">Input / edit evaluasi</a></td></tr>@empty<tr><td colspan="3">Tidak ada siswa kelas binaan.</td></tr>@endforelse
         </tbody></table></div>
     @else

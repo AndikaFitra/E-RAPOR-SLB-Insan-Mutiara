@@ -33,6 +33,8 @@ class DatabaseSeeder extends Seeder
             EkstrakurikulerSiswaSeeder::class, // 18. Tabel: ekstrakurikuler_siswa
             DistribusiRaporSeeder::class,      // 19. Tabel: distribusi_rapor
             ActivityLogSeeder::class,          // 20. Tabel: activity_log
+
+            DemoScenarioSeeder::class,         // 21. Skenario demo lintas peran dan status rapor
         ]);
     }
 }

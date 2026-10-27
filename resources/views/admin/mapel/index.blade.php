@@ -101,7 +101,7 @@
         <!-- Table of Mata Pelajaran -->
         <x-card class="mb-6">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
+                <table class="dashboard-table dashboard-table--wide text-left">
                     <thead>
                         <tr class="bg-[#F7F6F2] text-[#1A1A2E] text-[13px] font-semibold">
                             <th class="py-3 px-4 rounded-l-lg font-semibold">Kode</th>

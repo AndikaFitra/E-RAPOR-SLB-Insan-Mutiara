@@ -7,7 +7,12 @@
     <!-- Flash Alert -->
     @if(session('success'))
         <div class="mb-6">
-            <x-alert-banner type="success" title="Operasi Berhasil" :message="session('success')" />
+            <x-alert-banner type="success" title="Operasi Berhasil" :description="session('success')" />
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="mb-6" role="alert">
+            <x-alert-banner type="error" title="Guru tidak dapat dihapus" :description="session('error')" />
         </div>
     @endif
 
@@ -88,9 +93,9 @@
     </x-card>
 
     <!-- Table of Guru -->
-    <x-card class="mb-6">
+    <x-card class="mb-6" x-data="{}">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="dashboard-table dashboard-table--wide text-left">
                 <thead>
                     <tr class="bg-[#F7F6F2] text-[#1A1A2E] text-[13px] font-semibold">
                         <th class="py-3 px-4 rounded-l-lg font-semibold">Nama guru</th>
@@ -133,10 +138,13 @@
                                     <span class="text-gray-300">/</span>
                                     <button 
                                         type="button" 
-                                        @click="$dispatch('open-delete-modal', { 
-                                            name: '{{ addslashes($g['nama']) }}', 
-                                            details: 'NIP: {{ $g['nip'] }} · Spesialisasi: {{ addslashes($g['kekhususan']) }}',
-                                            action: '{{ route('admin.guru.destroy', $g['id']) }}'
+                                        data-name="{{ $g['nama'] }}"
+                                        data-details="NIP: {{ $g['nip'] }} · Spesialisasi: {{ $g['kekhususan'] }}"
+                                        data-action="{{ route('admin.guru.destroy', $g['id']) }}"
+                                        @click="$dispatch('open-delete-modal', {
+                                            name: $el.dataset.name,
+                                            details: $el.dataset.details,
+                                            action: $el.dataset.action
                                         })"
                                         class="text-rose-600 hover:text-rose-800 font-semibold transition-colors cursor-pointer"
                                     >
