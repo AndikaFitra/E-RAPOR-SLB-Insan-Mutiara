@@ -95,7 +95,7 @@
     }">
         <x-card class="overflow-hidden p-0">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-xs">
+                <table class="dashboard-table dashboard-table--wide text-left">
                     <thead>
                         <tr class="bg-[#F7F6F2] border-b border-[#E8E7ED] font-semibold text-gray-600">
                             <th class="py-3.5 px-6">Siswa & Ketunaan</th>

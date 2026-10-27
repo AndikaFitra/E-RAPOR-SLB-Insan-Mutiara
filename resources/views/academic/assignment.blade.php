@@ -4,7 +4,7 @@
 <form method="POST" action="{{ route('admin.penugasan.store') }}" class="panel space-y-5" data-dirty-form>@csrf<input type="hidden" name="kelas_id" value="{{ $kelas->id }}">
 <label>Wali kelas<select name="guru_id" required>@foreach($guruList as $g)<option value="{{ $g->id }}" @selected(old('guru_id', $wali?->guru_id) == $g->id)>{{ $g->nama_lengkap }}</option>@endforeach</select></label>
 <p>Pilih anggota kelas {{ $kelas->nama }}. Tingkat dan fase ditentukan per siswa. Menghapus centang akan melepas siswa dari kelas ini pada periode aktif.</p>
-<div class="overflow-x-auto"><table class="editable-table"><thead><tr><th>Pilih siswa</th><th>Kelas saat ini</th><th>Tingkat</th><th>Fase</th></tr></thead><tbody>
+<div class="overflow-x-auto"><table class="dashboard-table dashboard-table--medium editable-table"><thead><tr><th>Pilih siswa</th><th>Kelas saat ini</th><th>Tingkat</th><th>Fase</th></tr></thead><tbody>
 @foreach($students as $s) @php($a = $s->penugasanKelas->first())
 <tr><td><label><input type="checkbox" name="siswa[]" value="{{ $s->id }}" @checked(in_array($s->id, old('siswa', $students->filter(fn($x) => $x->penugasanKelas->first()?->kelas_id === $kelas->id)->pluck('id')->all())))> {{ $s->nama_lengkap }}</label></td><td>{{ $a?->kelas?->nama ?? 'Belum ditugaskan' }}</td>
 <td><select name="tingkat[{{ $s->id }}]"><option value="">Pilih</option>@foreach(['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'] as $level)<option @selected(old('tingkat.'.$s->id, $a?->tingkat) === $level)>{{ $level }}</option>@endforeach</select></td>

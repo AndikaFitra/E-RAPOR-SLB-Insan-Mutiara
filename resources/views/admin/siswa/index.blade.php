@@ -107,7 +107,7 @@
     <!-- Table of Siswa -->
     <x-card class="mb-6" x-data="{}">
         <div class="overflow-x-auto">
-            <table class="w-full min-w-[1080px] text-left border-collapse text-[13px]">
+            <table class="dashboard-table min-w-[1080px] text-left">
                 <thead>
                     <tr class="border-b border-[#E8E7ED] bg-[#F7F6F2] text-[12px] font-bold text-[#555783]">
                         <th scope="col" class="px-4 py-4">Nama siswa</th>

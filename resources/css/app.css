@@ -66,6 +66,23 @@ body {
 .academic-content .archive-actions a:hover { background:#f3f2f8; }
 .academic-content .archive-actions a:focus-visible { outline:2px solid #555783; outline-offset:2px; }
 .academic-content .archive-empty { padding:28px 16px; text-align:center; color:#6b7280; }
+.dashboard-table { width:100%; border-collapse:separate; border-spacing:0; font-size:13px; }
+.dashboard-table--wide { min-width:900px; }
+.dashboard-table--medium { min-width:680px; }
+.dashboard-table thead th { padding:14px 16px; background:#f7f6f2; border-bottom:1px solid #e8e7ed; color:#555783; font-size:12px; font-weight:700; line-height:1.4; vertical-align:middle; }
+.dashboard-table tbody td { padding:14px 16px; border-bottom:1px solid #e8e7ed; line-height:1.5; vertical-align:middle; }
+.dashboard-table tbody tr:last-child td { border-bottom:0; }
+.dashboard-table tbody tr:hover { background:#fbfbfa; }
+.dashboard-table a:focus-visible,.dashboard-table button:focus-visible { outline:2px solid #555783; outline-offset:2px; }
+.dashboard-table .table-empty { padding:28px 16px; text-align:center; color:#6b7280; }
+.dashboard-table .table-student { font-weight:650; color:#1a1a2e; }
+.dashboard-table .table-action { display:inline-flex; min-height:34px; align-items:center; justify-content:center; border:1px solid #d8dae4; border-radius:8px; padding:6px 10px; color:#555783; font-size:12px; font-weight:650; text-decoration:none; white-space:nowrap; }
+.dashboard-table .table-action:hover { background:#f3f2f8; }
+.status-pill { display:inline-flex; align-items:center; border-radius:999px; padding:4px 10px; font-size:11px; font-weight:650; white-space:nowrap; }
+.status-pill--draft { background:#f2f1ee; color:#666675; }
+.status-pill--submitted { background:#eef0fb; color:#4f55a1; }
+.status-pill--returned { background:#fff1f2; color:#be123c; }
+.status-pill--approved { background:#eaf8f0; color:#15803d; }
 .academic-content :disabled { opacity:.6; cursor:not-allowed; }
 .academic-content .report-body h3 { font-weight:700; margin-top:20px; margin-bottom:8px; }
 .mobile-menu-button { display:none; }

@@ -86,6 +86,18 @@ test('admin can confirm student deactivation from the table', async ({page}) => 
     await expect(page.locator('table tbody tr', {hasText:'Alya Putri'})).toContainText('Tidak Aktif');
     await expect(page.locator('table tbody tr', {hasText:'Alya Putri'}).getByText('Sudah nonaktif')).toBeVisible();
 });
+test('teacher delete opens confirmation and shows assignment restriction', async ({page}) => {
+    await login(page, 'admin');
+    await page.goto('/admin/guru');
+    const row = page.locator('table tbody tr', {hasText:'Ahmad Fauzi'});
+    await row.getByRole('button',{name:'Hapus'}).click();
+    await expect(page.getByText('Hapus data guru?')).toBeVisible();
+    await expect(page.locator('p[x-text="itemName"]')).toContainText('Ahmad Fauzi');
+    await page.locator('input[type="checkbox"][x-model="confirmed"]').check();
+    await page.getByRole('button',{name:'Hapus data'}).click();
+    await expect(page.getByRole('alert')).toContainText('Guru tidak dapat dihapus karena masih terkait akun atau penugasan.');
+    await expect(page.locator('table tbody tr', {hasText:'Ahmad Fauzi'})).toBeVisible();
+});
 test('wali can save class scores and cancel leaving unsaved changes', async ({ page }) => {
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));

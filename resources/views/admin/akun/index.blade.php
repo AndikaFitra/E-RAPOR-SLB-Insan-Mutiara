@@ -88,7 +88,7 @@
         <!-- Table of Users -->
         <x-card class="mb-6 p-0 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full min-w-[1140px] table-fixed text-left border-collapse text-[13px]">
+                <table class="dashboard-table min-w-[1140px] table-fixed text-left">
                     <colgroup>
                         <col class="w-[17%]"><col class="w-[26%]"><col class="w-[14%]">
                         <col class="w-[14%]"><col class="w-[9%]"><col class="w-[20%]">
