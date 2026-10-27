@@ -34,7 +34,7 @@
                         @endphp
                         <tr>
                             <td class="archive-student">{{ $row['data']['siswa']['nama_lengkap'] }}</td>
-                            <td>{{ $row['data']['kelas'] }} · {{ $row['data']['tingkat'] }} / {{ $row['data']['fase'] }}</td>
+                            <td>{{ $row['data']['kelas'] }} / {{ $row['data']['tingkat'] }} / {{ $row['data']['fase'] }}</td>
                             <td>{{ $row['data']['tahun'] }} · {{ $row['data']['semester'] }}</td>
                             <td><span class="archive-status {{ $statusClass }}">{{ ucfirst($status) }}</span></td>
                             <td>

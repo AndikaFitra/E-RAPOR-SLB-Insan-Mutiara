@@ -60,7 +60,7 @@ class LegerController extends Controller
         foreach ($siswaModels as $idx => $s) {
             $preset = $gradePresets[$idx % count($gradePresets)];
             $penugasan = $s->penugasanAktif();
-            $tingkat = ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D');
+            $tingkat = ($penugasan?->tingkat ?? 'VII') . ' / ' . ($penugasan?->fase ?? 'D');
             $ortu = $s->orangTua->firstWhere('is_penerima_utama', true) ?? $s->orangTua->first();
             $noWa = $ortu?->no_whatsapp ?? $s->no_hp;
             $namaOrtu = $ortu ? ($ortu->nama . ' (' . $ortu->hubungan . ')') : 'Orang Tua Murid';

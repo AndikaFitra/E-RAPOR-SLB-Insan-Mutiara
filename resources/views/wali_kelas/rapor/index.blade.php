@@ -109,7 +109,7 @@
                 <thead>
                     <tr class="bg-[#F7F6F2] border-b border-[#E8E7ED] font-semibold text-gray-600">
                         <th class="py-3.5 px-6">Siswa</th>
-                        <th class="py-3.5 px-4">Tingkat · Fase</th>
+                        <th class="py-3.5 px-4">Tingkat / Fase</th>
                         <th class="py-3.5 px-4">Akademik</th>
                         <th class="py-3.5 px-4">Non-akademik</th>
                         <th class="py-3.5 px-4">Status rapor</th>
@@ -142,7 +142,7 @@
                                 <div class="text-[11px] font-normal text-gray-400">NISN: {{ $s->nisn }} · {{ $s->kekhususan }}</div>
                             </td>
                             <td class="py-4 px-4 text-gray-600">
-                                {{ $penugasan?->tingkat ?? 'VII' }} · {{ $penugasan?->fase ?? 'D' }}
+                                {{ $penugasan?->tingkat ?? 'VII' }} / {{ $penugasan?->fase ?? 'D' }}
                             </td>
                             <td class="py-4 px-4">
                                 <span class="font-medium text-[#16A34A]">Tuntas</span>

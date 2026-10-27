@@ -71,7 +71,7 @@
                         <tr class="bg-[#F7F6F2] text-[#1A1A2E] font-semibold">
                             <th class="py-3 px-4 rounded-l-lg font-semibold w-1/3">Nama Siswa</th>
                             <th class="py-3 px-4 font-semibold">NISN</th>
-                            <th class="py-3 px-4 font-semibold">Tingkat · Fase</th>
+                            <th class="py-3 px-4 font-semibold">Tingkat / Fase</th>
                             <th class="py-3 px-4 rounded-r-lg font-semibold">Kelas saat ini</th>
                         </tr>
                     </thead>

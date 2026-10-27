@@ -71,7 +71,7 @@ class ArsipController extends Controller
                         'kekhususan'   => $s->kekhususan,
                         'periode'      => ($th?->tahun ?? '2026/2027') . ' · ' . ($th?->semester ?? 'Ganjil'),
                         'kelas'        => ($penugasan?->kelas?->nama ?? $s->kekhususan),
-                        'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D'),
+                        'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' / ' . ($penugasan?->fase ?? 'D'),
                         'status_siswa' => $s->is_aktif ? 'Aktif' : 'Non-aktif',
                         'status_rapor' => ucfirst($r->status),
                     ];
@@ -86,7 +86,7 @@ class ArsipController extends Controller
                     'kekhususan'   => $s->kekhususan,
                     'periode'      => ($tahunAktif?->tahun ?? '2026/2027') . ' · ' . ($tahunAktif?->semester ?? 'Ganjil'),
                     'kelas'        => ($penugasan?->kelas?->nama ?? $s->kekhususan),
-                    'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D'),
+                    'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' / ' . ($penugasan?->fase ?? 'D'),
                     'status_siswa' => $s->is_aktif ? 'Aktif' : 'Non-aktif',
                     'status_rapor' => 'Draft',
                 ];

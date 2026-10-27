@@ -105,67 +105,75 @@
     </x-card>
 
     <!-- Table of Siswa -->
-    <x-card class="mb-6">
+    <x-card class="mb-6" x-data="{}">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
+            <table class="w-full min-w-[1080px] text-left border-collapse text-[13px]">
                 <thead>
-                    <tr class="bg-[#F7F6F2] text-[#1A1A2E] text-[13px] font-semibold">
-                        <th class="py-3 px-4 rounded-l-lg font-semibold">Nama siswa</th>
-                        <th class="py-3 px-4 font-semibold">NIS / NISN</th>
-                        <th class="py-3 px-4 font-semibold">Kelas</th>
-                        <th class="py-3 px-4 font-semibold">Tingkat · Fase</th>
-                        <th class="py-3 px-4 font-semibold">Kekhususan</th>
-                        <th class="py-3 px-4 font-semibold">Status</th>
-                        <th class="py-3 px-4 rounded-r-lg font-semibold">Aksi</th>
+                    <tr class="border-b border-[#E8E7ED] bg-[#F7F6F2] text-[12px] font-bold text-[#555783]">
+                        <th scope="col" class="px-4 py-4">Nama siswa</th>
+                        <th scope="col" class="px-4 py-4">NIS / NISN</th>
+                        <th scope="col" class="px-4 py-4">Kelas</th>
+                        <th scope="col" class="px-4 py-4 whitespace-nowrap">Tingkat / Fase</th>
+                        <th scope="col" class="px-4 py-4">Kekhususan</th>
+                        <th scope="col" class="px-4 py-4">Status</th>
+                        <th scope="col" class="px-4 py-4">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100 text-[13px]">
+                <tbody class="divide-y divide-[#E8E7ED]">
                     @forelse($siswaList as $s)
-                        <tr class="hover:bg-gray-50/40 transition-colors">
-                            <td class="py-4.5 px-4 font-semibold text-[#1A1A2E] whitespace-nowrap">
+                        <tr class="hover:bg-[#FBFBFA] transition-colors">
+                            <td class="px-4 py-4 font-semibold text-[#1A1A2E]">
                                 {{ $s['nama'] }}
                             </td>
-                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
-                                {{ $s['nis'] }} / {{ $s['nisn'] }}
+                            <td class="px-4 py-4 text-gray-600 whitespace-nowrap">
+                                <span class="block font-medium text-[#1A1A2E]">NIS {{ $s['nis'] }}</span>
+                                <span class="mt-0.5 block text-xs text-gray-500">NISN {{ $s['nisn'] }}</span>
                             </td>
-                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
+                            <td class="px-4 py-4 text-gray-600 whitespace-nowrap">
                                 {{ $s['kelas'] }}
                             </td>
-                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
+                            <td class="px-4 py-4 text-gray-600 whitespace-nowrap">
                                 {{ $s['tingkat_fase'] }}
                             </td>
-                            <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">
-                                <span class="px-2.5 py-1 rounded-md text-xs font-semibold
+                            <td class="px-4 py-4 text-gray-600 whitespace-nowrap">
+                                <span class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold
                                     {{ $s['kekhususan'] === 'Tunarungu' ? 'bg-indigo-50 text-indigo-700' : '' }}
                                     {{ $s['kekhususan'] === 'Tunagrahita' ? 'bg-amber-50 text-amber-700' : '' }}
                                     {{ $s['kekhususan'] === 'Autis' ? 'bg-emerald-50 text-emerald-700' : '' }}">
                                     {{ $s['kekhususan'] }}
                                 </span>
                             </td>
-                            <td class="py-4.5 px-4 whitespace-nowrap font-medium {{ $s['status'] === 'Aktif' ? 'text-[#16A34A]' : 'text-gray-500' }}">
-                                {{ $s['status'] }}
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold {{ $s['status'] === 'Aktif' ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-600' }}">
+                                    <span class="h-1.5 w-1.5 rounded-full {{ $s['status'] === 'Aktif' ? 'bg-emerald-500' : 'bg-gray-400' }}"></span>{{ $s['status'] }}
+                                </span>
                             </td>
-                            <td class="py-4.5 px-4 whitespace-nowrap text-gray-500">
-                                <div class="flex items-center gap-1.5 text-[13px]">
-                                    <a href="{{ route('admin.siswa.show', $s['id']) }}" class="text-gray-700 hover:text-[#555783] font-medium transition-colors">
+                            <td class="px-4 py-4 whitespace-nowrap">
+                                <div class="flex items-center gap-1.5 text-[11px] font-semibold">
+                                    <a href="{{ route('admin.siswa.show', $s['id']) }}" class="inline-flex min-h-8 items-center rounded-lg border border-[#D8DAE4] px-2.5 text-[#555783] hover:bg-[#F3F2F8] transition-colors">
                                         Detail
                                     </a>
-                                    <span class="text-gray-300">/</span>
-                                    <a href="{{ route('admin.siswa.edit', $s['id']) }}" class="text-[#555783] hover:underline font-semibold transition-colors">
+                                    <a href="{{ route('admin.siswa.edit', $s['id']) }}" class="inline-flex min-h-8 items-center rounded-lg border border-[#D8DAE4] px-2.5 text-[#555783] hover:bg-[#F3F2F8] transition-colors">
                                         Edit
                                     </a>
-                                    <span class="text-gray-300">/</span>
-                                    <button
-                                        type="button"
-                                        @click="$dispatch('open-delete-modal', { 
-                                            name: '{{ addslashes($s['nama']) }}', 
-                                            details: 'NIS {{ $s['nis'] }} · NISN {{ $s['nisn'] }} · {{ $s['kelas'] }} ({{ $s['kekhususan'] }})',
-                                            action: '{{ route('admin.siswa.destroy', $s['id']) }}'
-                                        })"
-                                        class="text-rose-600 hover:text-rose-800 font-semibold transition-colors cursor-pointer"
-                                    >
-                                        Nonaktifkan
-                                    </button>
+                                    @if($s['status'] === 'Aktif')
+                                        <button
+                                            type="button"
+                                            data-name="{{ $s['nama'] }}"
+                                            data-details="NIS {{ $s['nis'] }} · NISN {{ $s['nisn'] }} · {{ $s['kelas'] }} ({{ $s['kekhususan'] }})"
+                                            data-action="{{ route('admin.siswa.destroy', $s['id']) }}"
+                                            @click="$dispatch('open-delete-modal', {
+                                                name: $el.dataset.name,
+                                                details: $el.dataset.details,
+                                                action: $el.dataset.action
+                                            })"
+                                            class="inline-flex min-h-8 items-center rounded-lg border border-rose-200 bg-rose-50 px-2.5 text-rose-700 hover:bg-rose-100 transition-colors cursor-pointer"
+                                        >
+                                            Nonaktifkan
+                                        </button>
+                                    @else
+                                        <span class="inline-flex min-h-8 items-center rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-gray-500">Sudah nonaktif</span>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

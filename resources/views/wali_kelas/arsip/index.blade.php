@@ -82,9 +82,9 @@
                 <thead>
                     <tr class="bg-[#F7F6F2] border-b border-[#E8E7ED] font-semibold text-gray-600">
                         <th class="py-3.5 px-6">Siswa</th>
-                        <th class="py-3.5 px-4">Tahun / Semester</th>
+                        <th class="py-3.5 px-4">Tahun · Semester</th>
                         <th class="py-3.5 px-4">Kelas saat itu</th>
-                        <th class="py-3.5 px-4">Tingkat · Fase</th>
+                        <th class="py-3.5 px-4">Tingkat / Fase</th>
                         <th class="py-3.5 px-4">Status siswa</th>
                         <th class="py-3.5 px-4">Status rapor</th>
                         <th class="py-3.5 px-6 text-right">Aksi</th>
