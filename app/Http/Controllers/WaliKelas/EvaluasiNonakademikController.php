@@ -49,7 +49,7 @@ class EvaluasiNonakademikController extends Controller
                 'id'           => $s->id,
                 'nama'         => $s->nama_lengkap,
                 'nisn'         => $s->nisn,
-                'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D'),
+                'tingkat'      => ($penugasan?->tingkat ?? 'VII') . ' / ' . ($penugasan?->fase ?? 'D'),
                 'kehadiran'    => $eval ? ("S:{$eval->sakit} · I:{$eval->izin} · A:{$eval->alpa}") : 'Belum diisi',
                 'sakit'        => $eval?->sakit ?? 0,
                 'izin'         => $eval?->izin ?? 0,

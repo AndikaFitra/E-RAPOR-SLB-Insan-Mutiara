@@ -85,7 +85,7 @@ class PersetujuanController extends Controller
                 'nis'        => '26' . str_pad($siswa->id, 3, '0', STR_PAD_LEFT),
                 'nisn'       => $siswa->nisn,
                 'kelas'      => $penugasan?->kelas?->nama ?? ($siswa->kekhususan . ' A'),
-                'fase'       => ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D'),
+                'fase'       => ($penugasan?->tingkat ?? 'VII') . ' / ' . ($penugasan?->fase ?? 'D'),
                 'wali_kelas' => $r->waliKelas?->nama_lengkap ?? 'Rina Pratiwi, S.Pd.',
                 'tanggal'    => $r->tgl_pengajuan ? $r->tgl_pengajuan->translatedFormat('d F Y') : '5 Oktober 2026',
                 'status'     => ucfirst($r->status),

@@ -79,7 +79,7 @@
                     <thead>
                         <tr class="bg-[#F7F6F2] border-b border-[#E8E7ED] font-semibold text-gray-600">
                             <th class="py-3.5 px-6">Siswa</th>
-                            <th class="py-3.5 px-4">Tingkat · Fase</th>
+                            <th class="py-3.5 px-4">Tingkat / Fase</th>
                             <th class="py-3.5 px-4">Kehadiran (S / I / A)</th>
                             <th class="py-3.5 px-4">Kegiatan / Prestasi</th>
                             <th class="py-3.5 px-4">Perkembangan</th>

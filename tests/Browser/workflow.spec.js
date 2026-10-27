@@ -62,6 +62,30 @@ test('archive table shows report links and stays within mobile viewport', async 
     expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
     await page.screenshot({path:'storage/framework/testing/arsip-mobile.png',fullPage:true});
 });
+test('student table uses matching level and phase labels', async ({page}) => {
+    await login(page, 'admin');
+    await page.setViewportSize({width:1600,height:900});
+    await page.goto('/admin/siswa');
+    const table = page.locator('table').first();
+    await expect(table.getByRole('columnheader',{name:'Tingkat / Fase'})).toBeVisible();
+    await expect(table.locator('tbody tr').first()).toContainText(/\b(?:VII|VIII|IX|X|XI|XII)\s*\/\s*[A-F]\b/);
+    await page.screenshot({path:'storage/framework/testing/siswa-table-desktop.png',fullPage:true});
+    await page.setViewportSize({width:390,height:844});
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth + 1)).toBeTruthy();
+    await page.screenshot({path:'storage/framework/testing/siswa-table-mobile.png',fullPage:true});
+});
+test('admin can confirm student deactivation from the table', async ({page}) => {
+    await login(page, 'admin');
+    await page.goto('/admin/siswa');
+    const row = page.locator('table tbody tr', {hasText:'Alya Putri'});
+    await row.getByRole('button',{name:'Nonaktifkan'}).click();
+    await expect(page.getByText('Nonaktifkan siswa?')).toBeVisible();
+    await expect(page.locator('p[x-text="itemName"]')).toHaveText('Alya Putri');
+    await page.locator('input[type="checkbox"][x-model="confirmed"]').check();
+    await page.getByRole('button',{name:'Nonaktifkan siswa'}).click();
+    await expect(page.locator('table tbody tr', {hasText:'Alya Putri'})).toContainText('Tidak Aktif');
+    await expect(page.locator('table tbody tr', {hasText:'Alya Putri'}).getByText('Sudah nonaktif')).toBeVisible();
+});
 test('wali can save class scores and cancel leaving unsaved changes', async ({ page }) => {
     const errors=[];
     page.on('pageerror',e=>errors.push(e.message));

@@ -19,82 +19,19 @@
 </head>
 <body class="h-full bg-[#F7F6F2] text-[#1A1A2E] antialiased selection:bg-[#555783] selection:text-white"
     x-data="{
-        mode: '{{ request('mode', (request()->has('lupa') ? 'forgot' : 'login')) }}',
-        status: '{{ request('status', (session('status') ? 'sukses' : '')) }}',
-        errorType: '{{ request('error', ($errors->has('inactive') ? 'inactive' : ($errors->has('credentials') || $errors->any() ? 'credentials' : '')) ) }}',
-        username: '{{ old('username', request('user', ($errors->has('credentials') || request('error') === 'kredensial' ? 'rina.pratiwi' : ''))) }}',
-        password: '{{ request('error') ? '••••••••••' : '' }}',
-        showPassword: false,
-        isCenteredLayout: {{ request('layout') === 'centered' || request()->has('centered') ? 'true' : 'false' }},
-
-        setDemo(user, pass) {
-            this.mode = 'login';
-            this.errorType = '';
-            this.status = '';
-            this.username = user;
-            this.password = pass;
-        },
-        triggerKredensialSalah() {
-            this.mode = 'login';
-            this.status = '';
-            this.errorType = 'credentials';
-            this.username = 'rina.pratiwi';
-            this.password = '••••••••••';
-        },
-        triggerAkunNonaktif() {
-            this.mode = 'login';
-            this.status = '';
-            this.errorType = 'inactive';
-            this.username = 'nonaktif';
-            this.password = '••••••••';
-        },
-        triggerSukses() {
-            this.mode = 'login';
-            this.errorType = '';
-            this.status = 'sukses';
-        }
+        mode: '{{ request()->has('lupa') ? 'forgot' : 'login' }}',
+        status: '{{ session('status') ? 'sukses' : '' }}',
+        errorType: '{{ $errors->has('inactive') ? 'inactive' : ($errors->has('credentials') || $errors->any() ? 'credentials' : '') }}',
+        username: @js(old('username', '')),
+        password: '',
+        showPassword: false
     }">
-
-    <!-- Top floating Demo State Switcher for Evaluator (Non-intrusive) -->
-    <div class="fixed top-3 right-3 z-50 flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E8E7ED] shadow-sm text-xs">
-        <span class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider mr-1">Preview 1:1:</span>
-        <button type="button" @click="setDemo('', ''); isCenteredLayout = false;"
-            class="px-2 py-0.5 rounded-md hover:bg-gray-100 transition-colors text-gray-700 font-medium"
-            :class="!errorType && !status && mode === 'login' && !isCenteredLayout ? 'bg-[#555783] text-white hover:bg-[#484A70]' : ''">
-            Selamat Datang
-        </button>
-        <button type="button" @click="triggerKredensialSalah()"
-            class="px-2 py-0.5 rounded-md hover:bg-rose-50 text-rose-700 transition-colors font-medium"
-            :class="errorType === 'credentials' ? 'bg-rose-100 text-rose-800' : ''">
-            Kredensial Salah
-        </button>
-        <button type="button" @click="triggerAkunNonaktif()"
-            class="px-2 py-0.5 rounded-md hover:bg-amber-50 text-amber-700 transition-colors font-medium"
-            :class="errorType === 'inactive' ? 'bg-amber-100 text-amber-800' : ''">
-            Akun Nonaktif
-        </button>
-        <button type="button" @click="mode = 'forgot'; errorType = ''; status = '';"
-            class="px-2 py-0.5 rounded-md hover:bg-indigo-50 text-indigo-700 transition-colors font-medium"
-            :class="mode === 'forgot' ? 'bg-[#555783] text-white hover:bg-[#484A70]' : ''">
-            Lupa Password
-        </button>
-        <button type="button" @click="triggerSukses()"
-            class="px-2 py-0.5 rounded-md hover:bg-emerald-50 text-emerald-700 transition-colors font-medium"
-            :class="status === 'sukses' ? 'bg-emerald-100 text-emerald-800' : ''">
-            Sukses
-        </button>
-        <button type="button" @click="isCenteredLayout = !isCenteredLayout"
-            class="px-2 py-0.5 rounded-md hover:bg-gray-100 text-gray-600 transition-colors text-[11px] border border-gray-200"
-            :title="isCenteredLayout ? 'Tampilkan Mode Split' : 'Tampilkan Mode Centered'">
-            <span x-text="isCenteredLayout ? 'Split View' : 'Centered View'"></span>
-        </button>
-    </div>
 
     <!-- Main Container -->
     <div class="min-h-screen flex flex-col lg:flex-row">
 
         <!-- Left Branding Panel (Identik Masuk · Selamat datang.png) -->
-        <div x-show="!isCenteredLayout" class="hidden lg:flex lg:w-[420px] xl:w-[480px] 2xl:w-[520px] bg-[#555783] text-white flex-col justify-between p-8 xl:p-12 relative overflow-hidden shrink-0 select-none">
+        <div class="hidden lg:flex lg:w-[420px] xl:w-[480px] 2xl:w-[520px] bg-[#555783] text-white flex-col justify-between p-8 xl:p-12 relative overflow-hidden shrink-0 select-none">
             <!-- Background Decorative Watermark Circles -->
             <div class="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-white/5 pointer-events-none"></div>
             <div class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-white/5 pointer-events-none"></div>
@@ -370,10 +307,6 @@
                 Kesulitan masuk? Hubungi administrator di tata usaha sekolah.
             </p>
 
-            <!-- Optional copyright on centered or mobile layout -->
-            <p x-show="isCenteredLayout" class="text-xs text-center text-gray-400 mt-1 font-normal lg:block">
-                © 2026 SLB Insan Mutiara Pekanbaru
-            </p>
         </div>
 
     </div>

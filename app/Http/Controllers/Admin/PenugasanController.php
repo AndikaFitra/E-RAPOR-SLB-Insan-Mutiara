@@ -30,7 +30,7 @@ class PenugasanController extends Controller
                 'id'             => $s->id,
                 'nama'           => $s->nama_lengkap,
                 'nisn'           => $s->nisn,
-                'tingkat_fase'   => ($penugasan?->tingkat ?? 'VII') . ' · ' . ($penugasan?->fase ?? 'D'),
+                'tingkat_fase'   => ($penugasan?->tingkat ?? 'VII') . ' / ' . ($penugasan?->fase ?? 'D'),
                 'kelas_saat_ini' => $penugasan?->kelas?->nama ?? 'Belum ditugaskan',
                 'selected'       => ($penugasan !== null),
             ];

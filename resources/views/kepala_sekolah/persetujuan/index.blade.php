@@ -135,7 +135,7 @@
                                 <div class="text-[11px] font-normal text-gray-400">NISN: {{ $item['nisn'] }} · {{ $item['kekhususan'] }}</div>
                             </td>
                             <td class="py-4 px-4 text-gray-600">
-                                {{ $item['kelas'] }} · {{ $item['fase'] }}
+                                {{ $item['kelas'] }} / {{ $item['fase'] }}
                             </td>
                             <td class="py-4 px-4 text-gray-600">
                                 {{ $item['wali_kelas'] }}

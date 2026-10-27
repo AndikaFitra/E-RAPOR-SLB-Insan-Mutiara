@@ -84,9 +84,9 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-[#F7F6F2] text-[#1A1A2E] text-[13px] font-semibold">
-                        <th class="py-3 px-4 rounded-l-lg font-semibold">Tahun / Semester</th>
+                        <th class="py-3 px-4 rounded-l-lg font-semibold">Tahun · Semester</th>
                         <th class="py-3 px-4 font-semibold">Kelas pada periode</th>
-                        <th class="py-3 px-4 font-semibold">Tingkat · Fase</th>
+                        <th class="py-3 px-4 font-semibold">Tingkat / Fase</th>
                         <th class="py-3 px-4 font-semibold">Rata-rata</th>
                         <th class="py-3 px-4 font-semibold">Status rapor</th>
                         <th class="py-3 px-4 rounded-r-lg font-semibold">Aksi</th>
@@ -96,7 +96,7 @@
                     <tr class="hover:bg-gray-50/40 transition-colors">
                         <td class="py-4.5 px-4 font-semibold text-[#1A1A2E] whitespace-nowrap">2026/2027 · Ganjil</td>
                         <td class="py-4.5 px-4 text-gray-700 whitespace-nowrap">Tunarungu A</td>
-                        <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">VII · D</td>
+                        <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">VII / D</td>
                         <td class="py-4.5 px-4 text-gray-800 font-semibold whitespace-nowrap">84,0</td>
                         <td class="py-4.5 px-4 font-medium text-[#1A1A2E] whitespace-nowrap">Diajukan</td>
                         <td class="py-4.5 px-4 whitespace-nowrap text-gray-500">
@@ -106,7 +106,7 @@
                     <tr class="hover:bg-gray-50/40 transition-colors">
                         <td class="py-4.5 px-4 font-semibold text-[#1A1A2E] whitespace-nowrap">2025/2026 · Genap</td>
                         <td class="py-4.5 px-4 text-gray-700 whitespace-nowrap">Tunarungu SD A</td>
-                        <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">VI · C</td>
+                        <td class="py-4.5 px-4 text-gray-600 whitespace-nowrap">VI / C</td>
                         <td class="py-4.5 px-4 text-gray-800 font-semibold whitespace-nowrap">82,0</td>
                         <td class="py-4.5 px-4 font-medium text-[#16A34A] whitespace-nowrap">Disetujui</td>
                         <td class="py-4.5 px-4 whitespace-nowrap text-gray-500">

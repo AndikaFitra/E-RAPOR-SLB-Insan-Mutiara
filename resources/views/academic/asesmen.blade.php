@@ -21,7 +21,7 @@
             @foreach($rows as $i => $row)
                 @php($locked = $row['rapor']?->isLocked())
                 @php($score = $row['nilai']->get($subject->id))
-                <tr><td>{{ $row['siswa']->nama_lengkap }}<small class="block">{{ $row['assignment']?->tingkat }} · {{ $row['assignment']?->fase }} · {{ $locked ? 'Terkunci' : 'Draft' }}</small></td>
+                <tr><td>{{ $row['siswa']->nama_lengkap }}<small class="block">{{ $row['assignment']?->tingkat }} / {{ $row['assignment']?->fase }} · {{ $locked ? 'Terkunci' : 'Draft' }}</small></td>
                 <td>
                     @unless($locked)<input type="hidden" name="nilai[{{ $i }}][siswa_id]" value="{{ $row['siswa']->id }}">@endunless
                     <input aria-label="Nilai {{ $row['siswa']->nama_lengkap }}" type="number" min="0" max="100" name="nilai[{{ $i }}][nilai_akhir]" value="{{ old('nilai.'.$i.'.nilai_akhir', $score?->nilai_akhir) }}" @disabled($locked)>
