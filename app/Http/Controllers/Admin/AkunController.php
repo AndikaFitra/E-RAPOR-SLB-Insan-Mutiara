@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class AkunController extends Controller
@@ -27,7 +28,8 @@ class AkunController extends Controller
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('nip', 'like', "%{$search}%");
             });
         }
 
@@ -51,6 +53,7 @@ class AkunController extends Controller
                 'name'       => $u->name,
                 'username'   => explode('@', $u->email)[0],
                 'email'      => $u->email,
+                'nip'        => $u->nip,
                 'role'       => $roleLabel,
                 'role_raw'   => $u->role,
                 'status'     => $u->is_aktif ? 'Aktif' : 'Tidak aktif',
@@ -65,9 +68,12 @@ class AkunController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $guruNip = $request->filled('guru_id') ? Guru::find($request->input('guru_id'))?->nip : null;
+        if ($guruNip) $request->merge(['nip' => $guruNip]);
         $validated = $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
+            'nip'      => ['required', 'digits:18', Rule::unique('users', 'nip')],
             'password' => 'required|string|min:8',
             'role'     => 'required|in:admin,kepala_sekolah,wali_kelas',
             'guru_id'  => 'nullable|required_if:role,wali_kelas|exists:guru,id|unique:users,guru_id',
@@ -76,6 +82,7 @@ class AkunController extends Controller
         $user = User::create([
             'name'     => $validated['name'],
             'email'    => $validated['email'],
+            'nip'      => $validated['nip'] ?? null,
             'password' => Hash::make($validated['password']),
             'role'     => $validated['role'],
             'guru_id'  => $validated['guru_id'] ?? null,

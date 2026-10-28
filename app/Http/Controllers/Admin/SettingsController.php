@@ -65,8 +65,11 @@ class SettingsController extends Controller
     public function saveAccount(Request $request,int $id)
     {
         $user=User::findOrFail($id);
+        $guruNip = $request->filled('guru_id') ? Guru::find($request->input('guru_id'))?->nip : null;
+        if ($guruNip) $request->merge(['nip' => $guruNip]);
         $input=$request->validate([
             'name'=>'required|string|max:255', 'email'=>['required','email',Rule::unique('users')->ignore($id)],
+            'nip'=>['required','digits:18',Rule::unique('users','nip')->ignore($id)],
             'role'=>'required|in:admin,kepala_sekolah,wali_kelas',
             'guru_id'=>['nullable','required_if:role,wali_kelas','exists:guru,id',Rule::unique('users')->ignore($id)],
             'is_aktif'=>'required|boolean','password'=>'nullable|string|min:8|confirmed',

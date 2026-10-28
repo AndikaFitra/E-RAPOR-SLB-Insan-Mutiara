@@ -18,17 +18,23 @@ class UserSeeder extends Seeder
         $guruKepsek = Guru::where('jabatan', 'Kepala Sekolah')->first();
         $guruRina   = Guru::where('nama_lengkap', 'like', '%Rina Pratiwi%')->first();
         $guruAhmad  = Guru::where('nama_lengkap', 'like', '%Ahmad Fauzi%')->first();
-        $guruSiti   = Guru::where('nama_lengkap', 'like', '%Siti Nurhaliza%')->first();
+
+        // Hapus hanya dua akun contoh lama yang tidak termasuk empat akun bawaan.
+        User::whereIn('email', [
+            'sitinurhaliza@slbinsanmutiara.sch.id',
+            'nonaktif@slbinsanmutiara.sch.id',
+        ])->delete();
 
         // Admin
         User::updateOrCreate(
             ['email' => 'admin@slbinsanmutiara.sch.id'],
             [
-                'name'     => 'Administrator Sistem',
+                'name'     => 'Sari Wulandari, S.Pd.',
                 'password' => Hash::make('password'),
                 'role'     => 'admin',
                 'is_aktif' => true,
                 'guru_id'  => null,
+                'nip'      => '198702122010011001',
             ]
         );
 
@@ -41,6 +47,7 @@ class UserSeeder extends Seeder
                 'role'     => 'kepala_sekolah',
                 'is_aktif' => true,
                 'guru_id'  => $guruKepsek?->id,
+                'nip'      => $guruKepsek?->nip,
             ]
         );
 
@@ -53,6 +60,7 @@ class UserSeeder extends Seeder
                 'role'     => 'wali_kelas',
                 'is_aktif' => true,
                 'guru_id'  => $guruRina?->id,
+                'nip'      => $guruRina?->nip,
             ]
         );
 
@@ -65,32 +73,10 @@ class UserSeeder extends Seeder
                 'role'     => 'wali_kelas',
                 'is_aktif' => true,
                 'guru_id'  => $guruAhmad?->id,
+                'nip'      => $guruAhmad?->nip,
             ]
         );
 
-        // Wali Kelas Autis
-        User::updateOrCreate(
-            ['email' => 'sitinurhaliza@slbinsanmutiara.sch.id'],
-            [
-                'name'     => 'Siti Nurhaliza, S.Pd.',
-                'password' => Hash::make('password'),
-                'role'     => 'wali_kelas',
-                'is_aktif' => true,
-                'guru_id'  => $guruSiti?->id,
-            ]
-        );
-
-        // Demo Akun Nonaktif
-        User::updateOrCreate(
-            ['email' => 'nonaktif@slbinsanmutiara.sch.id'],
-            [
-                'name'     => 'Akun Nonaktif Demo',
-                'password' => Hash::make('password'),
-                'role'     => 'wali_kelas',
-                'is_aktif' => false,
-                'guru_id'  => null,
-            ]
-        );
     }
 }
 

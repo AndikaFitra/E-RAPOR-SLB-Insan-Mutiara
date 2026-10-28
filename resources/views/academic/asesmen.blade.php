@@ -25,7 +25,21 @@
                 <td>
                     @unless($locked)<input type="hidden" name="nilai[{{ $i }}][siswa_id]" value="{{ $row['siswa']->id }}">@endunless
                     <input aria-label="Nilai {{ $row['siswa']->nama_lengkap }}" type="number" min="0" max="100" name="nilai[{{ $i }}][nilai_akhir]" value="{{ old('nilai.'.$i.'.nilai_akhir', $score?->nilai_akhir) }}" @disabled($locked)>
-                </td><td><textarea aria-label="Capaian {{ $row['siswa']->nama_lengkap }}" rows="4" maxlength="5000" name="nilai[{{ $i }}][narasi_capaian]" @disabled($locked)>{{ old('nilai.'.$i.'.narasi_capaian', $score?->narasi_capaian) }}</textarea></td></tr>
+                </td><td x-data="{}">
+                    @unless($locked)
+                        <label for="contoh-narasi-{{ $i }}" class="mb-2 block text-xs font-semibold text-[#555783]">Contoh kalimat</label>
+                        <select id="contoh-narasi-{{ $i }}" data-narasi-template aria-label="Contoh narasi {{ $row['siswa']->nama_lengkap }}"
+                            @change="if ($event.target.value) { $refs.narasi.value = $event.target.value; $refs.narasi.dispatchEvent(new Event('input', { bubbles: true })); }">
+                            <option value="">Pilih contoh, lalu sesuaikan</option>
+                            <option value="{{ $row['siswa']->nama_lengkap }} mampu memahami materi {{ $subject->nama }} dan menyelesaikan tugas secara mandiri.">Mandiri dalam belajar</option>
+                            <option value="{{ $row['siswa']->nama_lengkap }} menunjukkan kemajuan dalam {{ $subject->nama }} dan semakin mampu mengikuti arahan saat kegiatan belajar.">Menunjukkan kemajuan</option>
+                            <option value="{{ $row['siswa']->nama_lengkap }} mulai memahami materi {{ $subject->nama }} dengan bantuan dan pengulangan yang terarah.">Berkembang dengan bantuan</option>
+                            <option value="{{ $row['siswa']->nama_lengkap }} masih memerlukan pendampingan serta latihan rutin untuk memahami materi {{ $subject->nama }}.">Perlu latihan lanjutan</option>
+                        </select>
+                        <small class="mb-2 mt-1 block text-gray-500">Kalimat bisa diubah atau ditulis sendiri di bawah ini.</small>
+                    @endunless
+                    <textarea x-ref="narasi" aria-label="Capaian {{ $row['siswa']->nama_lengkap }}" rows="4" maxlength="5000" name="nilai[{{ $i }}][narasi_capaian]" placeholder="Tulis capaian sesuai pengamatan Anda" @disabled($locked)>{{ old('nilai.'.$i.'.narasi_capaian', $score?->narasi_capaian) }}</textarea>
+                </td></tr>
             @endforeach
             </tbody></table></div>
             <div class="flex gap-3"><a class="btn-secondary" href="{{ route('wali.asesmen.index', ['kelas_id' => $kelas->id]) }}">Kembali</a>@if($rows->contains(fn($r) => !$r['rapor']?->isLocked()))<button class="btn">Simpan nilai kelas</button>@endif</div>

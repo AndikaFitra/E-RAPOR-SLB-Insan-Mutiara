@@ -165,13 +165,12 @@ Akses aplikasi melalui browser di: **`http://127.0.0.1:8000`**
 
 Semua akun demo menggunakan password default yang sama: **`password`**
 
-| Role | Nama Pengguna | Email Login | Hak Akses Utama |
+| Role | Nama Pengguna | NIP Login | Hak Akses Utama |
 |:---|:---|:---|:---|
-| **Administrator** | Administrator Sistem | `admin@slbinsanmutiara.sch.id` | Akses penuh master data, manajemen akun & konfigurasi sekolah |
-| **Kepala Sekolah** | Novia Parenri, S.Si, M.Si | `kepsek@slbinsanmutiara.sch.id` | Verifikasi persetujuan rapor, catatan revisi, dan cetak leger |
-| **Wali Kelas** | Rina Pratiwi, S.Pd. | `rinapratiwi@slbinsanmutiara.sch.id` | Input asesmen Tunarungu, evaluasi bina komunikasi, kirim WA |
-| **Wali Kelas** | Ahmad Fauzi, S.Pd. | `ahmadfauzi@slbinsanmutiara.sch.id` | Pengelolaan rapor siswa kelas Tunagrahita & Bina Diri |
-| **Wali Kelas** | Siti Nurhaliza, S.Pd. | `sitinurhaliza@slbinsanmutiara.sch.id` | Pengelolaan rapor siswa kelas Autis & PKISP |
+| **Administrator** | Sari Wulandari, S.Pd. | `198702122010011001` | Akses penuh master data, manajemen akun & konfigurasi sekolah |
+| **Kepala Sekolah** | Novia Parenri, S.Si, M.Si | `198005122005012003` | Verifikasi persetujuan rapor, catatan revisi, dan cetak leger |
+| **Wali Kelas** | Rina Pratiwi, S.Pd. | `198803152011012014` | Input asesmen Tunarungu, evaluasi bina komunikasi, kirim WA |
+| **Wali Kelas** | Ahmad Fauzi, S.Pd. | `199107242015021002` | Pengelolaan rapor siswa kelas Tunagrahita & Bina Diri |
 
 ---
 

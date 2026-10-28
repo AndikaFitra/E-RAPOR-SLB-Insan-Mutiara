@@ -17,6 +17,7 @@
 
     <div x-data="{
         showCreateModal: false,
+        nipInput: @js(old('nip', '')),
         openDelete(id, name) {
             this.$dispatch('open-delete-modal', {
                 name: name,
@@ -59,7 +60,7 @@
                         type="text"
                         name="search"
                         value="{{ request('search') }}"
-                        placeholder="Cari nama atau email akun..."
+                        placeholder="Cari nama, NIP, atau email akun..."
                         class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-[#1A1A2E] placeholder-gray-400 focus:outline-none focus:border-[#555783]"
                     />
                 </div>
@@ -96,7 +97,7 @@
                     <thead>
                         <tr class="bg-[#F7F6F2] text-[#555783] text-[12px] font-bold border-b border-[#E8E7ED]">
                             <th scope="col" class="px-5 py-4">Nama pengguna</th>
-                            <th scope="col" class="px-5 py-4">Username / Email</th>
+                            <th scope="col" class="px-5 py-4">NIP / Email kontak</th>
                             <th scope="col" class="px-4 py-4">Hak akses</th>
                             <th scope="col" class="px-4 py-4">Guru terkait</th>
                             <th scope="col" class="px-4 py-4">Status</th>
@@ -113,7 +114,7 @@
                                     </div>
                                 </td>
                                 <td class="px-5 py-4">
-                                    <span class="block font-semibold text-[#1A1A2E]">{{ $u['username'] }}</span>
+                                    <span class="block font-semibold text-[#1A1A2E]">{{ $u['nip'] ?: 'NIP belum diisi' }}</span>
                                     <span class="mt-1 block break-all text-[12px] leading-5 text-gray-500" title="{{ $u['email'] }}">{{ $u['email'] }}</span>
                                 </td>
                                 <td class="px-4 py-4">
@@ -192,7 +193,7 @@
                     </div>
 
                     <div>
-                        <label class="block font-semibold text-gray-700 mb-1.5">Email / Username *</label>
+                        <label class="block font-semibold text-gray-700 mb-1.5">Email *</label>
                         <input
                             type="email"
                             name="email"
@@ -200,6 +201,11 @@
                             placeholder="nama@slbinsanmutiara.sch.id"
                             class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]"
                         />
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-gray-700 mb-1.5">NIP login *</label>
+                        <input type="text" name="nip" inputmode="numeric" pattern="[0-9]{18}" maxlength="18" required x-model="nipInput" placeholder="18 digit; mengikuti guru terkait jika ada" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]" />
                     </div>
 
                     <div>
@@ -225,10 +231,10 @@
                         </div>
                         <div>
                             <label class="block font-semibold text-gray-700 mb-1.5">Hubungkan ke Data Guru</label>
-                            <select name="guru_id" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]">
+                            <select name="guru_id" @change="nipInput = $event.target.selectedOptions[0].dataset.nip || nipInput" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]">
                                 <option value="">— Tidak terhubung —</option>
                                 @foreach($guruList as $g)
-                                    <option value="{{ $g->id }}">{{ $g->nama_lengkap }}</option>
+                                    <option value="{{ $g->id }}" data-nip="{{ $g->nip }}">{{ $g->nama_lengkap }}</option>
                                 @endforeach
                             </select>
                         </div>

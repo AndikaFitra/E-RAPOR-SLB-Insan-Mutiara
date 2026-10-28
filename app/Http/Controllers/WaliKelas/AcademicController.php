@@ -55,7 +55,8 @@ class AcademicController extends Controller
             }
             ActivityLog::log('Menyimpan draft nilai kelas '.$kelas->nama, $kelas, 'Sukses');
         });
-        return back()->with('success', 'Nilai kelas tersimpan. Isian yang kosong tetap sebagai draft.');
+        return redirect()->route('wali.asesmen.index', ['kelas_id' => $kelas->id])
+            ->with('success', 'Nilai kelas tersimpan. Isian yang kosong tetap sebagai draft.');
     }
 
     public function nonakademik(Request $request)
@@ -107,7 +108,8 @@ class AcademicController extends Controller
             }
             ActivityLog::log('Menyimpan evaluasi '.$siswa->nama_lengkap, $rapor, 'Sukses');
         });
-        return back()->with('success', 'Evaluasi tersimpan.');
+        return redirect()->route('wali.nonakademik.index')
+            ->with('success', 'Evaluasi tersimpan.');
     }
 
     public function rapor(Request $request)

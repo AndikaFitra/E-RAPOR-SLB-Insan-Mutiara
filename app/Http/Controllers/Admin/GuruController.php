@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class GuruController extends Controller
@@ -109,7 +110,7 @@ class GuruController extends Controller
 
     public function update(Request $request, int $id): RedirectResponse
     {
-        $guru = Guru::findOrFail($id);
+        $guru = Guru::with('user')->findOrFail($id);
 
         $validated = $request->validate([
             'nama_lengkap'  => 'required|string|max:100',
@@ -119,6 +120,10 @@ class GuruController extends Controller
             'no_whatsapp'   => 'required|string|max:20',
             'status'        => 'required|in:Aktif,Tidak aktif',
         ]);
+
+        if ($guru->user && $validated['nip']) {
+            $request->validate(['nip' => [Rule::unique('users', 'nip')->ignore($guru->user->id)]]);
+        }
 
         $guru->update([
             'nama_lengkap'  => $validated['nama_lengkap'],
@@ -131,6 +136,7 @@ class GuruController extends Controller
         if ($guru->user) {
             $guru->user->update([
                 'name'     => $guru->nama_lengkap,
+                'nip'      => $guru->nip,
                 'is_aktif' => ($validated['status'] === 'Aktif'),
             ]);
         }
