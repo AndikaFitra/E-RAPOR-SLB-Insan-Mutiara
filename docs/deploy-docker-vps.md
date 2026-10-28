@@ -40,3 +40,5 @@ docker compose --env-file .env.docker exec app php artisan optimize
 ```
 
 Jangan menjalankan `docker compose down -v` karena opsi `-v` menghapus volume data. Konfigurasi ini belum memasang HTTPS atau workflow CI/CD; keduanya disiapkan sebelum aplikasi digunakan dengan data sekolah sungguhan.
+
+Jika VPS sempat menjalankan versi Compose lama dengan MariaDB, volume `db_data` lama tidak dipakai oleh MySQL. Volume itu sengaja tidak dihapus agar data lama bisa diperiksa atau dicadangkan sebelum dibersihkan secara terpisah.
