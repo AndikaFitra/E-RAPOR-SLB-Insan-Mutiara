@@ -62,18 +62,19 @@ class NaturalSchoolDataSeederTest extends TestCase
     public function test_all_seeded_accounts_sign_in_with_nip_only(): void
     {
         Storage::fake('local');
+        config()->set('rapor.seed_account_password', 'RahasiaDemoSekolah2026!');
         $this->seed();
         $this->assertSame(4, User::count());
         $this->assertSame(2, User::where('role', 'wali_kelas')->count());
         foreach (['admin', 'kepala_sekolah', 'wali_kelas'] as $role) {
             $user = User::where('role', $role)->where('is_aktif', true)->firstOrFail();
             $this->assertMatchesRegularExpression('/^\d{18}$/', $user->nip);
-            $this->post('/login', ['nip' => $user->nip, 'password' => 'password'])
+            $this->post('/login', ['nip' => $user->nip, 'password' => 'RahasiaDemoSekolah2026!'])
                 ->assertRedirect(route($user->getDashboardRoute()));
             $this->post('/logout')->assertRedirect(route('login'));
         }
         $waliKedua = User::where('nip', '199107242015021002')->firstOrFail();
-        $this->post('/login', ['nip' => $waliKedua->nip, 'password' => 'password'])
+        $this->post('/login', ['nip' => $waliKedua->nip, 'password' => 'RahasiaDemoSekolah2026!'])
             ->assertRedirect(route($waliKedua->getDashboardRoute()));
     }
 

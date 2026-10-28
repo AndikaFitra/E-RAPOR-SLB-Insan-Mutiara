@@ -27,7 +27,7 @@ docker compose --env-file .env.docker exec app php artisan optimize
 docker compose --env-file .env.docker ps
 ```
 
-Seeder berisi akun contoh dengan password bawaan `password`. Jangan jalankan seeder pada situs yang terbuka untuk umum sebelum akses dibatasi dan password akun diganti. Bila hanya menampilkan demo dengan data sintetis, jalankan `docker compose --env-file .env.docker exec app php artisan db:seed --force` setelah migrasi, lalu segera ganti password akun contoh.
+Untuk data demo sintetis, isi `SEED_ACCOUNT_PASSWORD` dengan password kuat minimal 12 karakter di `.env.docker`, simpan nilainya secara pribadi, lalu jalankan `php artisan optimize:clear` dan `php artisan optimize` agar konfigurasi baru terbaca. Seeder production akan menolak berjalan jika password itu belum diisi. Setelah itu jalankan `docker compose --env-file .env.docker exec app php artisan db:seed --force`. Akun bawaan memakai password yang sama dari konfigurasi ini; ubah password tiap akun melalui aplikasi sebelum dipakai oleh pengguna sebenarnya. Jangan memasukkan data siswa sungguhan ke lingkungan demo.
 
 ## Pembaruan aplikasi
 
