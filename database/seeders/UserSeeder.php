@@ -15,6 +15,12 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $seedPassword = config('rapor.seed_account_password');
+        if (app()->environment('production') && (!is_string($seedPassword) || strlen($seedPassword) < 12)) {
+            throw new \RuntimeException('SEED_ACCOUNT_PASSWORD minimal 12 karakter wajib diisi sebelum seeding production.');
+        }
+        $seedPassword = $seedPassword ?: 'password';
+
         $guruKepsek = Guru::where('jabatan', 'Kepala Sekolah')->first();
         $guruRina   = Guru::where('nama_lengkap', 'like', '%Rina Pratiwi%')->first();
         $guruAhmad  = Guru::where('nama_lengkap', 'like', '%Ahmad Fauzi%')->first();
@@ -30,7 +36,7 @@ class UserSeeder extends Seeder
             ['email' => 'admin@slbinsanmutiara.sch.id'],
             [
                 'name'     => 'Sari Wulandari, S.Pd.',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($seedPassword),
                 'role'     => 'admin',
                 'is_aktif' => true,
                 'guru_id'  => null,
@@ -43,7 +49,7 @@ class UserSeeder extends Seeder
             ['email' => 'kepsek@slbinsanmutiara.sch.id'],
             [
                 'name'     => 'Novia Parenri, S.Si, M.Si',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($seedPassword),
                 'role'     => 'kepala_sekolah',
                 'is_aktif' => true,
                 'guru_id'  => $guruKepsek?->id,
@@ -56,7 +62,7 @@ class UserSeeder extends Seeder
             ['email' => 'rinapratiwi@slbinsanmutiara.sch.id'],
             [
                 'name'     => 'Rina Pratiwi, S.Pd.',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($seedPassword),
                 'role'     => 'wali_kelas',
                 'is_aktif' => true,
                 'guru_id'  => $guruRina?->id,
@@ -69,7 +75,7 @@ class UserSeeder extends Seeder
             ['email' => 'ahmadfauzi@slbinsanmutiara.sch.id'],
             [
                 'name'     => 'Ahmad Fauzi, S.Pd.',
-                'password' => Hash::make('password'),
+                'password' => Hash::make($seedPassword),
                 'role'     => 'wali_kelas',
                 'is_aktif' => true,
                 'guru_id'  => $guruAhmad?->id,
