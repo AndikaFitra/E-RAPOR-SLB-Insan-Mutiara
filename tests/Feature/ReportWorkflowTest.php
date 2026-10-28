@@ -62,7 +62,8 @@ class ReportWorkflowTest extends TestCase
 
     public function test_draft_can_be_partial_but_cannot_be_submitted(): void
     {
-        $this->actingAs($this->wali)->post(route('wali.asesmen.store'),$this->scorePayload(null))->assertRedirect()->assertSessionHasNoErrors();
+        $this->actingAs($this->wali)->post(route('wali.asesmen.store'),$this->scorePayload(null))
+            ->assertRedirect(route('wali.asesmen.index', ['kelas_id' => $this->kelas->id]))->assertSessionHasNoErrors();
         $this->assertDatabaseHas('nilai_asesmen',['siswa_id'=>$this->student->id,'nilai_akhir'=>null]);
         $this->post(route('wali.rapor.submit',$this->student->id))->assertSessionHasErrors('kelengkapan');
         $this->assertSame('draft',$this->report->fresh()->status);
@@ -142,7 +143,7 @@ class ReportWorkflowTest extends TestCase
             'siswa_id'=>$this->student->id,'sakit'=>0,'izin'=>0,'alpa'=>0,'perkembangan'=>'Sehat dan berkembang.',
             'catatan_wali'=>'Catatan terbaru.','tgl_rapor'=>'2026-12-20','prestasi'=>[['kegiatan'=>'Lomba seni','keterangan'=>'Peserta']],
             'ekskul'=>[$activity->id=>'Aktif dan disiplin.'],
-        ])->assertRedirect()->assertSessionHasNoErrors();
+        ])->assertRedirect(route('wali.nonakademik.index'))->assertSessionHasNoErrors();
         $this->assertDatabaseHas('prestasi_siswa',['kegiatan'=>'Lomba seni','siswa_id'=>$this->student->id]);
         $this->assertDatabaseHas('ekstrakurikuler_siswa',['keterangan'=>'Aktif dan disiplin.']);
         $this->get(route('wali.nonakademik.index',['siswa_id'=>$this->student->id]))->assertOk()->assertSee('Lomba seni');
@@ -193,10 +194,23 @@ class ReportWorkflowTest extends TestCase
         $this->actingAs($this->admin)->post(route('admin.penugasan.store'), $payload)->assertSessionHasErrors('konfirmasi_pindah');
         $this->assertDatabaseMissing('penugasan_siswa_kelas', ['siswa_id'=>$this->outsider->id, 'kelas_id'=>$this->kelas->id]);
         $payload['konfirmasi_pindah'] = '1';
-        $this->post(route('admin.penugasan.store'), $payload)->assertSessionHasNoErrors();
+        $this->post(route('admin.penugasan.store'), $payload)
+            ->assertRedirect(route('admin.penugasan.index', ['kelas_id' => $this->kelas->id]))->assertSessionHasNoErrors();
         foreach ([[$this->student,'VIII'],[$this->outsider,'IX']] as [$student,$grade]) {
             $this->assertDatabaseHas('penugasan_siswa_kelas', ['siswa_id'=>$student->id,'kelas_id'=>$this->kelas->id,'tingkat'=>$grade,'fase'=>'D']);
         }
+    }
+
+    public function test_extracurricular_assignment_returns_to_selected_activity(): void
+    {
+        $activity = Ekstrakurikuler::create(['nama' => 'Seni Lukis']);
+        $this->actingAs($this->admin)->post(route('admin.ekskul.penugasan.store'), [
+            'ekstrakurikuler_id' => $activity->id,
+            'guru_id' => $this->wali->guru_id,
+            'jadwal' => 'Jumat',
+            'siswa' => [],
+        ])->assertRedirect(route('admin.ekskul.penugasan', ['ekstrakurikuler_id' => $activity->id]))
+          ->assertSessionHasNoErrors();
     }
 
     public function test_teacher_conflicts_and_locked_assignments_are_rejected(): void

@@ -22,7 +22,7 @@
         mode: '{{ request()->has('lupa') ? 'forgot' : 'login' }}',
         status: '{{ session('status') ? 'sukses' : '' }}',
         errorType: '{{ $errors->has('inactive') ? 'inactive' : ($errors->has('credentials') || $errors->any() ? 'credentials' : '') }}',
-        username: @js(old('username', '')),
+        nip: @js(old('nip', '')),
         password: '',
         showPassword: false
     }">
@@ -145,9 +145,9 @@
                             </svg>
                         </div>
                         <div>
-                            <p class="text-sm font-bold text-[#991B1B]">Username atau password belum sesuai</p>
+                            <p class="text-sm font-bold text-[#991B1B]">NIP atau password belum sesuai</p>
                             <p class="text-xs text-[#B91C1C] mt-1 leading-relaxed">
-                                Periksa kembali penulisan username dan password, lalu coba lagi.
+                                Periksa kembali NIP dan password, lalu coba lagi.
                             </p>
                         </div>
                     </div>
@@ -175,9 +175,9 @@
                     <form method="POST" action="{{ route('login.post') }}" class="mt-6 space-y-4">
                         @csrf
 
-                        <!-- Username Input -->
+                        <!-- NIP Input -->
                         <div>
-                            <label for="input-username" class="block text-xs font-semibold text-[#1A1A2E] mb-1.5">Username</label>
+                            <label for="input-nip" class="block text-xs font-semibold text-[#1A1A2E] mb-1.5">NIP</label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,10 +185,10 @@
                                     </svg>
                                 </div>
                                 <input type="text"
-                                       name="username"
-                                       id="input-username"
-                                       x-model="username"
-                                       placeholder="Masukkan username"
+                                       name="nip"
+                                       id="input-nip"
+                                       x-model="nip"
+                                       placeholder="Masukkan NIP"
                                        required
                                        autofocus
                                        class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-[#E8E7ED] bg-[#FAFAFA] text-sm text-[#1A1A2E] placeholder-gray-400 focus:bg-white focus:outline-none focus:border-[#555783] focus:ring-1 focus:ring-[#555783] transition-all">
@@ -229,7 +229,7 @@
                         <div class="flex items-center justify-between pt-1">
                             <label class="flex items-center space-x-2 cursor-pointer select-none">
                                 <input type="checkbox" name="remember" class="w-4 h-4 rounded border-[#D1D5DB] text-[#555783] focus:ring-[#555783]">
-                                <span class="text-xs text-[#4B5563]">Ingat username saya</span>
+                                <span class="text-xs text-[#4B5563]">Ingat akun saya</span>
                             </label>
 
                             <button type="button"
@@ -281,7 +281,7 @@
                     <div class="mt-6 p-4 sm:p-5 rounded-2xl bg-[#F8F7F4] border border-[#EAE8E2] text-left">
                         <h4 class="text-sm font-semibold text-[#1A1A2E] mb-1.5">Bantuan dari tata usaha</h4>
                         <p class="text-xs text-gray-600 leading-relaxed">
-                            Sampaikan nama dan username akun Anda kepada administrator. Setelah password direset, gunakan password yang diberikan sekolah untuk masuk kembali.
+                            Sampaikan nama dan NIP akun Anda kepada administrator. Setelah password direset, gunakan password yang diberikan sekolah untuk masuk kembali.
                         </p>
                     </div>
 

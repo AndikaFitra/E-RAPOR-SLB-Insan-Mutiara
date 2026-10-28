@@ -67,7 +67,8 @@ class AssignmentController extends Controller
             foreach ($input['mapel'] ?? [] as $id) KelasMataPelajaran::create(['kelas_id'=>$input['kelas_id'], 'tahun_ajaran_id'=>$periode->id, 'mata_pelajaran_id'=>$id]);
             ActivityLog::log('Memperbarui penugasan dan kurikulum kelas', Kelas::find($input['kelas_id']), 'Sukses');
         });
-        return back()->with('success', 'Penugasan, tingkat/fase, dan mata pelajaran kelas disimpan.');
+        return redirect()->route('admin.penugasan.index', ['kelas_id' => $input['kelas_id']])
+            ->with('success', 'Penugasan, tingkat/fase, dan mata pelajaran kelas disimpan.');
     }
 
     public function ekskul(Request $request, RaporService $reports)
@@ -100,6 +101,7 @@ class AssignmentController extends Controller
             foreach ($selected as $id) EkstrakurikulerSiswa::firstOrCreate(['siswa_id'=>$id,'ekstrakurikuler_id'=>$input['ekstrakurikuler_id'],'tahun_ajaran_id'=>$periode->id]);
             ActivityLog::log('Memperbarui peserta dan pembimbing ekstrakurikuler', null, 'Sukses');
         });
-        return back()->with('success', 'Peserta dan pembimbing disimpan tanpa penugasan ganda.');
+        return redirect()->route('admin.ekskul.penugasan', ['ekstrakurikuler_id' => $input['ekstrakurikuler_id']])
+            ->with('success', 'Peserta dan pembimbing disimpan tanpa penugasan ganda.');
     }
 }

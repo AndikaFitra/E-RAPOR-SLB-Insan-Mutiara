@@ -23,16 +23,13 @@ class PenugasanWaliKelasSeeder extends Seeder
 
         $guruRina  = Guru::where('nama_lengkap', 'like', '%Rina Pratiwi%')->first();
         $guruAhmad = Guru::where('nama_lengkap', 'like', '%Ahmad Fauzi%')->first();
-        $guruSiti  = Guru::where('nama_lengkap', 'like', '%Siti Nurhaliza%')->first();
 
         $kelasTunarungu   = Kelas::where('kode', 'TU-A')->first();
         $kelasTunagrahita = Kelas::where('kode', 'TG-A')->first();
-        $kelasAutis       = Kelas::where('kode', 'AU-A')->first();
 
         $assignments = [
             ['guru' => $guruRina, 'kelas' => $kelasTunarungu],
             ['guru' => $guruAhmad, 'kelas' => $kelasTunagrahita],
-            ['guru' => $guruSiti, 'kelas' => $kelasAutis],
         ];
 
         foreach ($assignments as $a) {

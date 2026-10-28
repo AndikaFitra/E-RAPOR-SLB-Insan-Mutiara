@@ -34,6 +34,21 @@ body {
 }
 
 [x-cloak] { display: none !important; }
+.app-confirm-backdrop { position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center; padding:16px; background:rgba(26,26,46,.48); backdrop-filter:blur(2px); }
+.app-confirm-dialog { width:min(100%,440px); padding:28px; border:1px solid #e8e7ed; border-radius:18px; background:#fff; box-shadow:0 24px 70px rgba(26,26,46,.22); color:#1a1a2e; }
+.app-confirm-icon { display:flex; width:48px; height:48px; align-items:center; justify-content:center; margin-bottom:18px; border-radius:12px; background:#f3f2f8; color:#555783; }
+.app-confirm-dialog h2 { margin:0 0 8px; font-size:20px; font-weight:700; line-height:1.35; }
+.app-confirm-dialog p { margin:0; color:#62677a; font-size:14px; line-height:1.6; }
+.app-confirm-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:26px; }
+.app-confirm-actions button { min-height:42px; padding:9px 16px; border-radius:10px; border:1px solid #d8dae4; font:600 13px 'Plus Jakarta Sans',sans-serif; cursor:pointer; }
+.app-confirm-cancel { background:#fff; color:#555783; }
+.app-confirm-cancel:hover { background:#f7f6f2; }
+.app-confirm-accept { background:#555783; border-color:#555783 !important; color:#fff; }
+.app-confirm-accept:hover { background:#484a70; }
+.app-confirm-accept.is-danger { background:#be123c; border-color:#be123c !important; }
+.app-confirm-accept.is-danger:hover { background:#9f1239; }
+.app-confirm-actions button:focus-visible { outline:2px solid #555783; outline-offset:3px; }
+.app-draft-notice { margin-bottom:16px; padding:12px 14px; border:1px solid #cfd4e9; border-radius:10px; background:#f3f4fb; color:#41456e; font-size:13px; line-height:1.5; }
 .academic-content .panel { background:white; border:1px solid #e8e7ed; border-radius:16px; padding:24px; }
 .academic-content h2 { font-size:18px; font-weight:700; margin-bottom:8px; }
 .academic-content label { display:block; font-size:13px; font-weight:600; }

@@ -34,36 +34,32 @@ class AuthController extends Controller
     public function login(Request $request): RedirectResponse
     {
         $request->validate([
-            'username' => ['required', 'string'],
+            'nip' => ['required', 'string'],
             'password' => ['required', 'string'],
         ], [
-            'username.required' => 'Username wajib diisi.',
+            'nip.required' => 'NIP wajib diisi.',
             'password.required' => 'Password wajib diisi.',
         ]);
 
-        $usernameInput = trim($request->input('username'));
+        $nipInput = trim($request->input('nip'));
         $passwordInput = $request->input('password');
         $remember      = $request->boolean('remember');
 
-        // Cari pengguna berdasarkan email langsung atau mapping username
-        $sanitized = str_replace(['.', '_', '-'], '', strtolower($usernameInput));
-        $user = User::where('email', $usernameInput)
-            ->orWhere('email', $sanitized . '@slbinsanmutiara.sch.id')
-            ->first();
+        $user = User::where('nip', $nipInput)->first();
 
         // Validasi kredensial pengguna
         if (! $user || ! Hash::check($passwordInput, $user->password)) {
             return back()
-                ->withInput($request->only('username', 'remember'))
+                ->withInput($request->only('nip', 'remember'))
                 ->withErrors([
-                    'credentials' => 'Periksa kembali penulisan username dan password, lalu coba lagi.',
+                    'credentials' => 'Periksa kembali NIP dan password, lalu coba lagi.',
                 ]);
         }
 
         // Validasi status keaktifan akun
         if (! $user->is_aktif) {
             return back()
-                ->withInput($request->only('username'))
+                ->withInput($request->only('nip'))
                 ->withErrors([
                     'inactive' => 'Akun Anda tidak aktif. Hubungi administrator sekolah untuk mengaktifkan kembali akun.',
                 ]);

@@ -34,7 +34,7 @@ class DatabaseSeeder extends Seeder
             DistribusiRaporSeeder::class,      // 19. Tabel: distribusi_rapor
             ActivityLogSeeder::class,          // 20. Tabel: activity_log
 
-            DemoScenarioSeeder::class,         // 21. Skenario demo lintas peran dan status rapor
+            NaturalSchoolDataSeeder::class,    // 21. Data contoh lintas periode dan status rapor
         ]);
     }
 }
