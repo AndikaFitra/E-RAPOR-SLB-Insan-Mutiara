@@ -1,6 +1,6 @@
 # Menjalankan E-Rapor dengan Docker Compose
 
-Konfigurasi ini memakai tiga container: PHP-FPM (Laravel), Nginx, dan MariaDB. Port database tidak dibuka ke internet. Data MariaDB dan berkas Laravel (termasuk PDF rapor) disimpan pada volume Docker terpisah dari image.
+Konfigurasi ini memakai tiga container: PHP-FPM (Laravel), Nginx, dan MySQL 8.4. Port database tidak dibuka ke internet. Data MySQL dan berkas Laravel (termasuk PDF rapor) disimpan pada volume Docker terpisah dari image.
 
 ## Persiapan
 
