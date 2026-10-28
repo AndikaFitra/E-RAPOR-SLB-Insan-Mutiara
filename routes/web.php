@@ -107,6 +107,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Arsip
     Route::get('/arsip', [\App\Http\Controllers\ReportController::class, 'arsip'])->name('arsip.index');
+
+    // Log Aktivitas
+    Route::get('/log-aktivitas', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('log.index');
 });
 
 // ── Modul Kepala Sekolah ─────────────────────────────────────
