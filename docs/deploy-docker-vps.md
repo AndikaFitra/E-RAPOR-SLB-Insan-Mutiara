@@ -17,7 +17,7 @@ openssl rand -hex 24
 openssl rand -hex 24
 ```
 
-Isi `.env.docker` dengan editor. Tambahkan `base64:` di depan hasil perintah pertama untuk `APP_KEY`. Gunakan dua hasil berikutnya sebagai `DB_PASSWORD` dan `DB_ROOT_PASSWORD`. Jangan commit atau membagikan file ini. Set `APP_URL=https://insanmutiara.my.id` sebelum menjalankan Caddy dan bersihkan cache konfigurasi Laravel setelah mengubah nilai itu.
+Isi `.env.docker` dengan editor. Tambahkan `base64:` di depan hasil perintah pertama untuk `APP_KEY`. Gunakan dua hasil berikutnya sebagai `DB_PASSWORD` dan `DB_ROOT_PASSWORD`. Jangan commit atau membagikan file ini. Set `APP_URL=https://insanmutiara.my.id` dan `SESSION_SECURE_COOKIE=true` sebelum menjalankan Caddy. Bersihkan cache konfigurasi Laravel setelah mengubah nilai itu.
 
 ```bash
 docker compose --env-file .env.docker config --quiet
