@@ -33,9 +33,6 @@ jobs:
           composer install --no-interaction --prefer-dist --no-progress
           php artisan key:generate
 
-      - name: Jalankan tes
-        run: php artisan test
-
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -45,6 +42,9 @@ jobs:
         run: |
           npm ci
           npm run build
+
+      - name: Jalankan tes
+        run: php artisan test
 
   deploy:
     name: Deploy manual ke VPS
