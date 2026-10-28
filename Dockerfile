@@ -26,9 +26,10 @@ USER www-data
 EXPOSE 9000
 CMD ["php-fpm"]
 
-FROM nginx:stable-alpine AS web
-COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+FROM caddy:2-alpine AS web
+COPY docker/caddy/Caddyfile /etc/caddy/Caddyfile
 COPY public /var/www/html/public
 COPY --from=assets /build/public/build /var/www/html/public/build
 RUN ln -s /var/www/html/storage/app/public /var/www/html/public/storage
 EXPOSE 80
+EXPOSE 443
