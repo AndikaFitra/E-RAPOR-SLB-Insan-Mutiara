@@ -56,15 +56,23 @@ class AssignmentController extends Controller
                 if (empty($input['tingkat'][$id]) || empty($input['fase'][$id])) {
                     throw ValidationException::withMessages(['tingkat'=>'Isi tingkat dan fase setiap siswa yang dipilih.']);
                 }
-                PenugasanSiswaKelas::updateOrCreate(['siswa_id'=>$id, 'tahun_ajaran_id'=>$periode->id], [
-                    'kelas_id'=>$input['kelas_id'], 'tingkat'=>$input['tingkat'][$id], 'fase'=>$input['fase'][$id],
-                ]);
+                $assignment = PenugasanSiswaKelas::withTrashed()->firstOrNew(['siswa_id'=>$id, 'tahun_ajaran_id'=>$periode->id]);
+                $assignment->fill(['kelas_id'=>$input['kelas_id'], 'tingkat'=>$input['tingkat'][$id], 'fase'=>$input['fase'][$id]]);
+                $assignment->deleted_at = null;
+                $assignment->save();
             }
             PenugasanSiswaKelas::where('tahun_ajaran_id', $periode->id)->where('kelas_id', $input['kelas_id'])->whereNotIn('siswa_id', $selected)->delete();
             PenugasanWaliKelas::updateOrCreate(['kelas_id'=>$input['kelas_id'], 'tahun_ajaran_id'=>$periode->id], ['guru_id'=>$input['guru_id']]);
             Rapor::where('tahun_ajaran_id', $periode->id)->whereIn('siswa_id', $selected)->update(['wali_kelas_id'=>$input['guru_id']]);
-            KelasMataPelajaran::where('kelas_id', $input['kelas_id'])->where('tahun_ajaran_id', $periode->id)->delete();
-            foreach ($input['mapel'] ?? [] as $id) KelasMataPelajaran::create(['kelas_id'=>$input['kelas_id'], 'tahun_ajaran_id'=>$periode->id, 'mata_pelajaran_id'=>$id]);
+            $selectedSubjects = collect($input['mapel'] ?? [])->map(fn ($id) => (int) $id);
+            KelasMataPelajaran::where('kelas_id', $input['kelas_id'])->where('tahun_ajaran_id', $periode->id)
+                ->whereNotIn('mata_pelajaran_id', $selectedSubjects)->delete();
+            foreach ($selectedSubjects as $id) {
+                $subject = KelasMataPelajaran::withTrashed()->firstOrNew(['kelas_id'=>$input['kelas_id'],
+                    'tahun_ajaran_id'=>$periode->id, 'mata_pelajaran_id'=>$id]);
+                $subject->deleted_at = null;
+                $subject->save();
+            }
             ActivityLog::log('Memperbarui penugasan dan kurikulum kelas', Kelas::find($input['kelas_id']), 'Sukses');
         });
         return redirect()->route('admin.penugasan.index', ['kelas_id' => $input['kelas_id']])
@@ -98,7 +106,12 @@ class AssignmentController extends Controller
             }
             DB::table('penugasan_ekstrakurikuler')->updateOrInsert(['ekstrakurikuler_id'=>$input['ekstrakurikuler_id'], 'tahun_ajaran_id'=>$periode->id], ['guru_id'=>$input['guru_id'],'jadwal'=>$input['jadwal'] ?? null,'updated_at'=>now(),'created_at'=>now()]);
             EkstrakurikulerSiswa::where('ekstrakurikuler_id',$input['ekstrakurikuler_id'])->where('tahun_ajaran_id',$periode->id)->whereNotIn('siswa_id',$selected)->delete();
-            foreach ($selected as $id) EkstrakurikulerSiswa::firstOrCreate(['siswa_id'=>$id,'ekstrakurikuler_id'=>$input['ekstrakurikuler_id'],'tahun_ajaran_id'=>$periode->id]);
+            foreach ($selected as $id) {
+                $participant = EkstrakurikulerSiswa::withTrashed()->firstOrNew(['siswa_id'=>$id,
+                    'ekstrakurikuler_id'=>$input['ekstrakurikuler_id'],'tahun_ajaran_id'=>$periode->id]);
+                $participant->deleted_at = null;
+                $participant->save();
+            }
             ActivityLog::log('Memperbarui peserta dan pembimbing ekstrakurikuler', null, 'Sukses');
         });
         return redirect()->route('admin.ekskul.penugasan', ['ekstrakurikuler_id' => $input['ekstrakurikuler_id']])

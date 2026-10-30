@@ -261,6 +261,23 @@ class ReportWorkflowTest extends TestCase
         $this->post(route('admin.tahun-ajaran.tutup-tahun', $this->year->id))->assertStatus(422);
     }
 
+    public function test_removed_class_assignments_are_archived_and_reused_when_selected_again(): void
+    {
+        $assignment = PenugasanSiswaKelas::where('siswa_id', $this->student->id)->firstOrFail();
+        $subjectAssignment = KelasMataPelajaran::where('kelas_id', $this->kelas->id)->firstOrFail();
+        $payload = ['kelas_id'=>$this->kelas->id, 'guru_id'=>$this->wali->guru_id,
+            'tingkat'=>[$this->student->id=>'VIII'], 'fase'=>[$this->student->id=>'D']];
+        $this->actingAs($this->admin)->post(route('admin.penugasan.store'), $payload)->assertRedirect();
+        $this->assertSoftDeleted('penugasan_siswa_kelas', ['id'=>$assignment->id]);
+        $this->assertSoftDeleted('kelas_mata_pelajaran', ['id'=>$subjectAssignment->id]);
+
+        $this->post(route('admin.penugasan.store'), $payload + [
+            'siswa'=>[$this->student->id], 'mapel'=>[$this->subject->id],
+        ])->assertRedirect();
+        $this->assertDatabaseHas('penugasan_siswa_kelas', ['id'=>$assignment->id,'deleted_at'=>null]);
+        $this->assertDatabaseHas('kelas_mata_pelajaran', ['id'=>$subjectAssignment->id,'deleted_at'=>null]);
+    }
+
     public function test_evaluation_saves_achievements_and_extracurricular_grades(): void
     {
         $activity=Ekstrakurikuler::create(['nama'=>'Pramuka']);
