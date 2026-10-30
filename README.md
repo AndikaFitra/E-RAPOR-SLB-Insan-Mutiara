@@ -17,6 +17,16 @@
 
 Sistem ini diterapkan untuk **SLB Insan Mutiara Pekanbaru** yang beralamat di Jalan Cendana No. 33A / Adi Sucipto, Kota Pekanbaru, Riau, di bawah pimpinan Kepala Sekolah **Novia Parenri, S.Si, M.Si** (NIP. 198005122005012003).
 
+### Kelompok Lunora
+
+| Anggota | NIM |
+| --- | --- |
+| Andika Fitra Darmawan | 2303135265 |
+| TIO ANDRIAN | 2303110119 |
+| Irfan Sinaga | 2303113019 |
+| M. Taqiyuddin Dzaky | 2303126079 |
+| Fitri Nur Dayani | 2303110134 |
+
 ---
 
 ## ✨ Fitur Unggulan (Key Features)
@@ -252,7 +262,7 @@ SEMUA PENGUJIAN LULUS DENGAN SEMPURNA!
 
 ## 🤝 Pengembang & Lisensi
 
-* **Pengembang**: [Andika Fitra Darmawan](https://github.com/AndikaFitra)
-* **Email**: `andika.namikaze02@gmail.com`
+* **Pengembang**: Kelompok Lunora (anggota tercantum di atas).
+* **Kontak proyek**: [Andika Fitra Darmawan](https://github.com/AndikaFitra) · `andika.namikaze02@gmail.com`
 * **Institusi**: SLB Insan Mutiara Pekanbaru
 * **Lisensi**: Proyek ini dilisensikan di bawah lisensi terbuka [MIT](LICENSE).
