@@ -65,6 +65,20 @@ class ReportWorkflowTest extends TestCase
             ->assertOk()->assertSee('A Siswa Nonaktif')->assertDontSee('Siswa Pengujian');
     }
 
+    public function test_admin_student_form_requires_nis_and_marks_invalid_fields(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.siswa.store'), [
+            'nama_lengkap'=>str_repeat('A', 101), 'nis'=>'', 'nisn'=>'1234567893',
+            'jenis_kelamin'=>'L', 'kekhususan'=>'Tunarungu', 'is_aktif'=>'1',
+        ])->assertSessionHasErrors(['nama_lengkap','nis']);
+
+        $this->get(route('admin.siswa.create'))->assertOk()
+            ->assertSee('Kolom nama lengkap maksimal 100 karakter.')
+            ->assertSee('Kolom NIS wajib diisi.')
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('<select name="agama"', false);
+    }
+
     public function test_wali_only_sees_assigned_students(): void
     {
         $this->actingAs($this->wali)->get(route('wali.rapor.index'))->assertOk()->assertSee('Siswa Pengujian')->assertDontSee('Siswa Kelas Lain');
