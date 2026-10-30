@@ -65,7 +65,7 @@ class NaturalSchoolDataSeeder extends Seeder
                     $subject = $service->mapel($class, $period->id)->first();
                     if ($subject) NilaiAsesmen::updateOrCreate(
                         ['siswa_id' => $student->id, 'tahun_ajaran_id' => $period->id, 'mata_pelajaran_id' => $subject->id],
-                        ['nilai_akhir' => 72 + ($index % 9), 'narasi_capaian' => null, 'is_locked' => false]
+                        ['nilai_akhir' => 85, 'narasi_capaian' => null, 'is_locked' => false]
                     );
                     $report->update(['status' => $status, 'tgl_pengajuan' => null]);
                     continue;
@@ -100,10 +100,10 @@ class NaturalSchoolDataSeeder extends Seeder
 
     private function completeReport(Siswa $student, Kelas $class, TahunAjaran $period, Rapor $report, RaporService $service, int $index): void
     {
-        foreach ($service->mapel($class, $period->id) as $subjectIndex => $subject) {
+        foreach ($service->mapel($class, $period->id) as $subject) {
             NilaiAsesmen::updateOrCreate(
                 ['siswa_id' => $student->id, 'tahun_ajaran_id' => $period->id, 'mata_pelajaran_id' => $subject->id],
-                ['nilai_akhir' => 72 + (($index * 3 + $subjectIndex * 2 + (int) substr($period->tahun, 0, 4)) % 19),
+                ['nilai_akhir' => 85,
                     'narasi_capaian' => $student->nama_lengkap.' menunjukkan perkembangan bertahap dalam '.$subject->nama.' melalui latihan di kelas.']
             );
         }

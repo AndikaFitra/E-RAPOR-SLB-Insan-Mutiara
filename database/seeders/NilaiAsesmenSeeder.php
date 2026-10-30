@@ -29,12 +29,12 @@ class NilaiAsesmenSeeder extends Seeder
             $this->seedNilai($siswaAlya->id, $thAktif->id, [
                 [
                     'mapel'  => $mapels->get('PABP'),
-                    'nilai'  => 90,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda menunjukkan banyak perubahan positif dalam berinteraksi dan bertingkah laku terpuji sesuai nilai keagamaan.',
                 ],
                 [
                     'mapel'  => $mapels->get('PPKN'),
-                    'nilai'  => 88,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda mampu mengenal simbol-simbol Pancasila dan menerapkannya dalam gotong royong di lingkungan sekolah.',
                 ],
                 [
@@ -44,17 +44,17 @@ class NilaiAsesmenSeeder extends Seeder
                 ],
                 [
                     'mapel'  => $mapels->get('MTK'),
-                    'nilai'  => 87,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda terampil dalam operasi hitung penjumlahan dan pengurangan menggunakan benda konkret.',
                 ],
                 [
                     'mapel'  => $mapels->get('PKPBI'),
-                    'nilai'  => 98,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda sangat baik dalam mengidentifikasi langsung sumber bunyi dan irama lingkungan menggunakan sisa pendengaran secara optimal.',
                 ],
                 [
                     'mapel'  => $mapels->get('K-SUV'),
-                    'nilai'  => 92,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda kreatif dalam merangkai dan membuat cinderamata suvenir berbahan dasar kain flanel dan manik-manik.',
                 ],
             ]);
@@ -66,12 +66,12 @@ class NilaiAsesmenSeeder extends Seeder
             $this->seedNilai($siswaBima->id, $thAktif->id, [
                 [
                     'mapel'  => $mapels->get('PABP'),
-                    'nilai'  => 86,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda rajin mengikuti doa harian dan tertib dalam kegiatan ibadah di sekolah.',
                 ],
                 [
                     'mapel'  => $mapels->get('PKPBI'),
-                    'nilai'  => 90,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda menunjukkan ketekunan tinggi dalam persepsi bunyi latar belakang dan latihan artikulasi konsonan dasar.',
                 ],
             ]);
@@ -83,12 +83,12 @@ class NilaiAsesmenSeeder extends Seeder
             $this->seedNilai($siswaNadia->id, $thAktif->id, [
                 [
                     'mapel'  => $mapels->get('PABP'),
-                    'nilai'  => 84,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda mampu menirukan gerakan ibadah sederhana dengan bimbingan penuh kasih.',
                 ],
                 [
                     'mapel'  => $mapels->get('BINADIRI'),
-                    'nilai'  => 92,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda mengalami kemajuan signifikan dalam kemandirian mencuci tangan, makan sendiri, dan merapikan pakaian.',
                 ],
             ]);
@@ -105,7 +105,7 @@ class NilaiAsesmenSeeder extends Seeder
                 ],
                 [
                     'mapel'  => $mapels->get('PKISP'),
-                    'nilai'  => 89,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda semakin responsif saat dipanggil namanya, menunjukkan kontak mata yang bertambah fokus, serta mampu mengomunikasikan kebutuhan dasar dengan kartu PECS.',
                 ],
             ]);
@@ -117,12 +117,12 @@ class NilaiAsesmenSeeder extends Seeder
             $this->seedNilai($siswaFriska->id, $thAktif->id, [
                 [
                     'mapel'  => $mapels->get('PABP'),
-                    'nilai'  => 92,
+                    'nilai'  => 85,
                     'narasi' => 'Ananda menunjukkan kematangan sikap spiritual dan toleransi yang terpuji dalam kehidupan sekolah.',
                 ],
                 [
                     'mapel'  => $mapels->get('PKPBI'),
-                    'nilai'  => 95,
+                    'nilai'  => 85,
                     'narasi' => 'Kemampuan komunikasi total dan keterbacaan ujaran ananda sangat prima.',
                 ],
             ]);
