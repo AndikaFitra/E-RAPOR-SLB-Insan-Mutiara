@@ -65,7 +65,8 @@ class ReviewController extends Controller
             $this->reports->assertComplete($data);
             $path = 'rapor/'.$rapor->id.'-'.Str::uuid().'.pdf';
             abort_unless(Storage::disk('local')->put($path, $this->reports->pdf($data)), 500);
-            $rapor->update(['snapshot' => $data, 'pdf_path' => $path, 'share_token' => Str::random(64)]);
+            $rapor->update(['snapshot' => $data, 'pdf_path' => $path, 'share_token' => Str::random(64),
+                'share_token_expires_at' => now()->addDays(Rapor::SHARE_LINK_DAYS)]);
             ActivityLog::log('Memfinalisasi dokumen rapor lama setelah peninjauan', $rapor, 'Disetujui');
         });
         return back()->with('success', 'Dokumen final disimpan berdasarkan data yang telah ditinjau.');

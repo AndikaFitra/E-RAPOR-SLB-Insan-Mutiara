@@ -9,6 +9,7 @@ use App\Models\TahunAjaran;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -67,32 +68,38 @@ class GuruController extends Controller
     {
         $validated = $request->validate([
             'nama_lengkap'  => 'required|string|max:100',
-            'nip'           => 'nullable|string|max:30|unique:guru,nip',
+            'nip'           => ['required_with:email', 'nullable', 'digits:18', Rule::unique('guru', 'nip'), Rule::unique('users', 'nip')],
             'jenis_kelamin' => 'required|in:L,P',
             'kekhususan'    => 'required|string',
             'no_whatsapp'   => 'required|string|max:20',
             'email'         => 'nullable|email|max:100|unique:users,email',
+            'password'      => 'required_with:email|nullable|string|min:12|confirmed',
             'status'        => 'required|in:Aktif,Tidak aktif',
         ]);
 
-        $guru = Guru::create([
-            'nama_lengkap'  => $validated['nama_lengkap'],
-            'nip'           => $validated['nip'] ?: null,
-            'jenis_kelamin' => $validated['jenis_kelamin'],
-            'jabatan'       => $validated['kekhususan'],
-            'no_whatsapp'   => $validated['no_whatsapp'],
-        ]);
-
-        if (!empty($validated['email'])) {
-            User::create([
-                'name'     => $guru->nama_lengkap,
-                'email'    => $validated['email'],
-                'password' => Hash::make('password'),
-                'role'     => 'wali_kelas',
-                'is_aktif' => ($validated['status'] === 'Aktif'),
-                'guru_id'  => $guru->id,
+        $guru = DB::transaction(function () use ($validated) {
+            $guru = Guru::create([
+                'nama_lengkap'  => $validated['nama_lengkap'],
+                'nip'           => $validated['nip'] ?: null,
+                'jenis_kelamin' => $validated['jenis_kelamin'],
+                'jabatan'       => $validated['kekhususan'],
+                'no_whatsapp'   => $validated['no_whatsapp'],
             ]);
-        }
+
+            if (!empty($validated['email'])) {
+                User::create([
+                    'name'     => $guru->nama_lengkap,
+                    'email'    => $validated['email'],
+                    'nip'      => $validated['nip'],
+                    'password' => Hash::make($validated['password']),
+                    'role'     => 'wali_kelas',
+                    'is_aktif' => ($validated['status'] === 'Aktif'),
+                    'guru_id'  => $guru->id,
+                ]);
+            }
+
+            return $guru;
+        });
 
         ActivityLog::log('Menambahkan data guru baru: ' . $guru->nama_lengkap, $guru, 'Sukses');
 

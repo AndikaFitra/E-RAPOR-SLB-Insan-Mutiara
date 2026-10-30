@@ -7,6 +7,7 @@ use App\Models\{ActivityLog, DistribusiRapor, EkstrakurikulerSiswa, EvaluasiNona
 use App\Services\{RaporService, WhatsAppService};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AcademicController extends Controller
@@ -173,7 +174,7 @@ class AcademicController extends Controller
         $input = $request->validate(['status_kirim' => 'required|in:terkirim,gagal', 'catatan' => 'nullable|string|max:1000']);
         $rapor = Rapor::with('siswa.orangTua')->findOrFail($id);
         $this->reports->authorize($rapor->siswa, $rapor->tahun_ajaran_id);
-        abort_unless($rapor->isDisetujui() && $rapor->share_token && $rapor->snapshot, 422, 'Dokumen final belum siap.');
+        abort_unless($rapor->hasValidShareLink(), 422, 'Tautan rapor tidak aktif. Perbarui tautan sebelum mengirim.');
         $ortu = $rapor->siswa->orangTua->firstWhere('is_penerima_utama', true) ?? $rapor->siswa->orangTua->first();
         abort_unless($ortu, 422, 'Penerima belum ditetapkan.');
         if ($input['status_kirim'] === 'terkirim' && !WhatsAppService::validPhone($ortu->no_whatsapp)) {
@@ -185,5 +186,22 @@ class AcademicController extends Controller
         ]);
         ActivityLog::log('Distribusi rapor ditandai '.$input['status_kirim'], $rapor, $input['status_kirim']);
         return back()->with('success', 'Riwayat distribusi disimpan.');
+    }
+
+    public function renewShareLink(Request $request, int $id)
+    {
+        DB::transaction(function () use ($request, $id) {
+            $rapor = Rapor::with('siswa')->whereKey($id)->lockForUpdate()->firstOrFail();
+            abort_unless($rapor->siswa, 404);
+            $this->reports->authorize($rapor->siswa, $rapor->tahun_ajaran_id, $request->user());
+            abort_unless($rapor->isDisetujui() && $rapor->snapshot && $rapor->pdf_path, 422, 'Dokumen final belum siap.');
+            $rapor->update([
+                'share_token' => Str::random(64),
+                'share_token_expires_at' => now()->addDays(Rapor::SHARE_LINK_DAYS),
+            ]);
+            ActivityLog::log('Memperbarui tautan penerima rapor', $rapor, 'Sukses');
+        });
+
+        return back()->with('success', 'Tautan baru siap digunakan. Tautan lama tidak berlaku lagi.');
     }
 }

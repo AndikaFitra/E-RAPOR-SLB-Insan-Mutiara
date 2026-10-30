@@ -180,7 +180,7 @@ test('kepala can export the filtered ledger',async ({page})=>{
     await login(page,'kepsek');
     await page.goto('/kepala-sekolah/leger');
     await expect(page.getByRole('link',{name:'Kembali ke Beranda'})).toBeVisible();
-    await expect(page.getByText('Kriteria ketuntasan belum ditetapkan oleh sekolah.',{exact:false})).toBeVisible();
+    await expect(page.getByText('Kriteria ketuntasan sekolah belum ditetapkan; status ini tidak menentukan kenaikan kelas.',{exact:false})).toBeVisible();
     await page.locator('[name=maksimum]').fill('100');
     await page.getByRole('button',{name:'Terapkan filter'}).click();
     const pending=page.waitForEvent('download');

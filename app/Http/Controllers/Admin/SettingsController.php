@@ -90,7 +90,7 @@ class SettingsController extends Controller
             'nip'=>['required','digits:18',Rule::unique('users','nip')->ignore($id)],
             'role'=>'required|in:admin,kepala_sekolah,wali_kelas',
             'guru_id'=>['nullable','required_if:role,wali_kelas','exists:guru,id',Rule::unique('users')->ignore($id)],
-            'is_aktif'=>'required|boolean','password'=>'nullable|string|min:8|confirmed',
+            'is_aktif'=>'required|boolean','password'=>'nullable|string|min:12|confirmed',
         ]);
         if ($user->id === $request->user()->id && ($input['role'] !== 'admin' || !$input['is_aktif'])) {
             return back()->withErrors(['role'=>'Anda tidak dapat menonaktifkan atau mencabut akses admin akun yang sedang digunakan.']);

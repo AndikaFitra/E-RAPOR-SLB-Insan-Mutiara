@@ -15,11 +15,16 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        $seedPassword = config('rapor.seed_account_password');
-        if (app()->environment('production') && (!is_string($seedPassword) || strlen($seedPassword) < 12)) {
-            throw new \RuntimeException('SEED_ACCOUNT_PASSWORD minimal 12 karakter wajib diisi sebelum seeding production.');
+        $passwords = config('rapor.seed_account_passwords');
+        if (app()->environment('production')) {
+            if (count(array_filter($passwords, fn ($password) => is_string($password) && strlen($password) >= 12)) !== 4
+                || count(array_unique($passwords)) !== 4) {
+                throw new \RuntimeException('Empat SEED_*_PASSWORD yang berbeda dan minimal 12 karakter wajib diisi sebelum seeding production.');
+            }
+        } else {
+            $fallback = config('rapor.seed_account_password') ?: 'password';
+            $passwords = array_map(fn ($password) => $password ?: $fallback, $passwords);
         }
-        $seedPassword = $seedPassword ?: 'password';
 
         $guruKepsek = Guru::where('jabatan', 'Kepala Sekolah')->first();
         $guruRina   = Guru::where('nama_lengkap', 'like', '%Rina Pratiwi%')->first();
@@ -32,57 +37,62 @@ class UserSeeder extends Seeder
         ])->delete();
 
         // Admin
-        User::updateOrCreate(
-            ['email' => 'admin@slbinsanmutiara.sch.id'],
+        $this->upsertAccount(
+            'admin@slbinsanmutiara.sch.id',
             [
                 'name'     => 'Sari Wulandari, S.Pd.',
-                'password' => Hash::make($seedPassword),
                 'role'     => 'admin',
                 'is_aktif' => true,
                 'guru_id'  => null,
                 'nip'      => '198702122010011001',
-            ]
+            ], $passwords['admin']
         );
 
         // Kepala Sekolah
-        User::updateOrCreate(
-            ['email' => 'kepsek@slbinsanmutiara.sch.id'],
+        $this->upsertAccount(
+            'kepsek@slbinsanmutiara.sch.id',
             [
                 'name'     => 'Novia Parenri, S.Si, M.Si',
-                'password' => Hash::make($seedPassword),
                 'role'     => 'kepala_sekolah',
                 'is_aktif' => true,
                 'guru_id'  => $guruKepsek?->id,
                 'nip'      => $guruKepsek?->nip,
-            ]
+            ], $passwords['kepala']
         );
 
         // Wali Kelas Tunarungu
-        User::updateOrCreate(
-            ['email' => 'rinapratiwi@slbinsanmutiara.sch.id'],
+        $this->upsertAccount(
+            'rinapratiwi@slbinsanmutiara.sch.id',
             [
                 'name'     => 'Rina Pratiwi, S.Pd.',
-                'password' => Hash::make($seedPassword),
                 'role'     => 'wali_kelas',
                 'is_aktif' => true,
                 'guru_id'  => $guruRina?->id,
                 'nip'      => $guruRina?->nip,
-            ]
+            ], $passwords['wali_tunarungu']
         );
 
         // Wali Kelas Tunagrahita
-        User::updateOrCreate(
-            ['email' => 'ahmadfauzi@slbinsanmutiara.sch.id'],
+        $this->upsertAccount(
+            'ahmadfauzi@slbinsanmutiara.sch.id',
             [
                 'name'     => 'Ahmad Fauzi, S.Pd.',
-                'password' => Hash::make($seedPassword),
                 'role'     => 'wali_kelas',
                 'is_aktif' => true,
                 'guru_id'  => $guruAhmad?->id,
                 'nip'      => $guruAhmad?->nip,
-            ]
+            ], $passwords['wali_tunagrahita']
         );
 
+    }
+
+    private function upsertAccount(string $email, array $attributes, string $password): void
+    {
+        $user = User::firstOrNew(['email' => $email]);
+        if (!$user->exists) {
+            $user->password = Hash::make($password);
+        }
+        $user->fill($attributes)->save();
     }
 }
 

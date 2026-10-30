@@ -214,8 +214,8 @@
                             type="password"
                             name="password"
                             required
-                            minlength="8"
-                            placeholder="Minimal 8 karakter"
+                            minlength="12"
+                            placeholder="Minimal 12 karakter"
                             class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:border-[#555783]"
                         />
                     </div>

@@ -142,6 +142,8 @@ Route::middleware(['auth', 'role:wali_kelas'])->prefix('wali-kelas')->name('wali
     Route::post('/rapor-saya/{id}/ajukan', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'submit'])->name('rapor.submit');
     Route::get('/distribusi', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'distribusi'])->name('distribusi.index');
     Route::post('/distribusi/{id}/mark-sent', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'markSent'])->name('distribusi.mark-sent');
+    Route::post('/distribusi/{id}/perbarui-tautan', [\App\Http\Controllers\WaliKelas\AcademicController::class, 'renewShareLink'])
+        ->middleware('throttle:5,1')->name('distribusi.renew-link');
     Route::get('/arsip', [\App\Http\Controllers\ReportController::class, 'arsip'])->name('arsip.index');
 });
 

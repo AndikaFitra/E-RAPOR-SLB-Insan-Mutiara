@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\{DistribusiRapor, KelasMataPelajaran, NilaiAsesmen, PenugasanSiswaKelas, PenugasanWaliKelas, Rapor, Siswa, TahunAjaran, User};
-use Database\Seeders\NaturalSchoolDataSeeder;
+use Database\Seeders\{NaturalSchoolDataSeeder, UserSeeder};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -79,6 +79,18 @@ class NaturalSchoolDataSeederTest extends TestCase
         $waliKedua = User::where('nip', '199107242015021002')->firstOrFail();
         $this->post('/login', ['nip' => $waliKedua->nip, 'password' => 'RahasiaDemoSekolah2026!'])
             ->assertRedirect(route($waliKedua->getDashboardRoute()));
+    }
+
+    public function test_reseeding_accounts_preserves_changed_passwords(): void
+    {
+        Storage::fake('local');
+        $this->seed();
+        $admin = User::where('role', 'admin')->firstOrFail();
+        $admin->update(['password' => 'SandiAdminBaruYangKuat!']);
+
+        $this->seed(UserSeeder::class);
+
+        $this->assertTrue(\Illuminate\Support\Facades\Hash::check('SandiAdminBaruYangKuat!', $admin->fresh()->password));
     }
 
     private function sampleNisns(): array
