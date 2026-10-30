@@ -206,6 +206,35 @@ class ReportWorkflowTest extends TestCase
         $this->assertNotNull(OrangTua::find($parent->id));
     }
 
+    public function test_admin_closes_report_entry_after_all_approvals_and_can_reopen_with_audit(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.tahun-ajaran.tutup-pengisian', $this->year->id))
+            ->assertSessionHasErrors('pengisian');
+        $this->report->update(['status'=>'disetujui']);
+        Rapor::create(['siswa_id'=>$this->outsider->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui']);
+        $this->post(route('admin.tahun-ajaran.tutup-pengisian', $this->year->id))->assertRedirect();
+        $this->assertNotNull($this->year->fresh()->pengisian_ditutup_pada);
+
+        $newStudent = Siswa::create(['nama_lengkap'=>'Siswa Baru','nisn'=>'1234567894','jenis_kelamin'=>'P','kekhususan'=>'Tunarungu']);
+        PenugasanSiswaKelas::create(['siswa_id'=>$newStudent->id,'kelas_id'=>$this->kelas->id,'tahun_ajaran_id'=>$this->year->id,'tingkat'=>'VIII','fase'=>'D']);
+        $payload = ['kelas_id'=>$this->kelas->id,'mapel_id'=>$this->subject->id,
+            'nilai'=>[['siswa_id'=>$newStudent->id,'nilai_akhir'=>80,'narasi_capaian'=>'Capaian baru.']]];
+        $this->actingAs($this->wali)->post(route('wali.asesmen.store'), $payload)->assertStatus(422);
+        $this->actingAs($this->admin)->post(route('admin.tahun-ajaran.buka-pengisian', $this->year->id),
+            ['alasan'=>'Memperbaiki data siswa baru'])->assertRedirect();
+        $this->assertNull($this->year->fresh()->pengisian_ditutup_pada);
+        $this->actingAs($this->wali)->post(route('wali.asesmen.store'), $payload)->assertRedirect();
+    }
+
+    public function test_report_entry_deadline_blocks_wali_edits_until_admin_extends_it(): void
+    {
+        $this->year->update(['batas_pengisian'=>today()->subDay()]);
+        $this->actingAs($this->wali)->post(route('wali.asesmen.store'), $this->scorePayload())->assertStatus(422);
+        $this->year->update(['batas_pengisian'=>today()->addDay()]);
+        $this->post(route('wali.asesmen.store'), $this->scorePayload())->assertRedirect();
+    }
+
     public function test_evaluation_saves_achievements_and_extracurricular_grades(): void
     {
         $activity=Ekstrakurikuler::create(['nama'=>'Pramuka']);

@@ -75,6 +75,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/tahun-ajaran', [\App\Http\Controllers\Admin\SettingsController::class, 'years'])->name('tahun-ajaran.index');
     Route::post('/tahun-ajaran', [\App\Http\Controllers\Admin\SettingsController::class, 'saveYear'])->name('tahun-ajaran.store');
     Route::post('/tahun-ajaran/{id}/aktifkan', [TahunAjaranController::class, 'setAktif'])->name('tahun-ajaran.aktifkan');
+    Route::post('/tahun-ajaran/{id}/tutup-pengisian', [\App\Http\Controllers\Admin\ReportEntryController::class, 'close'])->name('tahun-ajaran.tutup-pengisian');
+    Route::post('/tahun-ajaran/{id}/buka-pengisian', [\App\Http\Controllers\Admin\ReportEntryController::class, 'reopen'])->name('tahun-ajaran.buka-pengisian');
 
     // Orang Tua / Wali
     Route::get('/orang-tua', [OrangTuaController::class, 'index'])->name('orang-tua.index');

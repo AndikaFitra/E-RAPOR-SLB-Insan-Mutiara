@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\{ActivityLog, Guru, Sekolah, TahunAjaran, User};
+use App\Models\{ActivityLog, Guru, PenugasanSiswaKelas, Rapor, Sekolah, TahunAjaran, User};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -14,7 +14,19 @@ class SettingsController extends Controller
     {
         $periode = TahunAjaran::getAktif();
         $years = TahunAjaran::orderByDesc('tahun')->get();
-        return view('academic.years', compact('periode', 'years'));
+        $progress = collect();
+        if ($periode) {
+            $assignments = PenugasanSiswaKelas::with('kelas')->where('tahun_ajaran_id', $periode->id)
+                ->whereHas('siswa', fn ($q) => $q->where('is_aktif', true))->get();
+            $approved = Rapor::where('tahun_ajaran_id', $periode->id)->where('status', Rapor::STATUS_DISETUJUI)
+                ->pluck('siswa_id')->flip();
+            $progress = $assignments->groupBy('kelas_id')->map(fn ($group) => [
+                'kelas' => $group->first()->kelas?->nama ?? 'Kelas tidak tersedia',
+                'total' => $group->count(),
+                'disetujui' => $group->filter(fn ($assignment) => $approved->has($assignment->siswa_id))->count(),
+            ])->values();
+        }
+        return view('academic.years', compact('periode', 'years', 'progress'));
     }
 
     public function saveYear(Request $request, ?int $id = null)
@@ -23,6 +35,7 @@ class SettingsController extends Controller
         $input = $request->validate([
             'tahun'=>['required','regex:/^\d{4}\/\d{4}$/', Rule::unique('tahun_ajaran')->where('semester',$request->semester)->ignore($year->id)],
             'semester'=>'required|in:Ganjil,Genap', 'tgl_mulai'=>'nullable|date', 'tgl_selesai'=>'nullable|date|after_or_equal:tgl_mulai',
+            'batas_pengisian'=>'nullable|date',
         ]);
         [$start,$end] = explode('/', $input['tahun']);
         if ((int)$end !== (int)$start + 1) return back()->withInput()->withErrors(['tahun'=>'Tahun ajaran harus dua tahun berurutan.']);

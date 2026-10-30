@@ -14,13 +14,15 @@ class TahunAjaran extends Model
     protected $fillable = [
         'tahun',
         'semester',
-        'is_aktif', 'tgl_mulai', 'tgl_selesai',
+        'is_aktif', 'tgl_mulai', 'tgl_selesai', 'batas_pengisian', 'pengisian_ditutup_pada',
     ];
 
     protected function casts(): array
     {
         return [
             'is_aktif' => 'boolean',
+            'batas_pengisian' => 'date',
+            'pengisian_ditutup_pada' => 'datetime',
         ];
     }
 
@@ -34,6 +36,12 @@ class TahunAjaran extends Model
     public static function getAktif(): ?self
     {
         return static::aktif()->first();
+    }
+
+    public function isPengisianTerbuka(): bool
+    {
+        return $this->is_aktif && $this->pengisian_ditutup_pada === null
+            && ($this->batas_pengisian === null || now('Asia/Jakarta')->toDateString() <= $this->batas_pengisian->toDateString());
     }
 
     public function getLabelAttribute(): string
