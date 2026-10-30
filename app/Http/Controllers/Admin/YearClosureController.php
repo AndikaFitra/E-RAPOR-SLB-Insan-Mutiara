@@ -52,16 +52,18 @@ class YearClosureController extends Controller
             foreach (KelasMataPelajaran::where('tahun_ajaran_id', $id)->get() as $item) {
                 KelasMataPelajaran::create(['kelas_id'=>$item->kelas_id, 'mata_pelajaran_id'=>$item->mata_pelajaran_id, 'tahun_ajaran_id'=>$next->id]);
             }
+            $decisions = Rapor::where('tahun_ajaran_id', $id)->pluck('keputusan', 'siswa_id');
             foreach ($assignments as $item) {
                 $position = array_search($item->tingkat, self::LEVELS, true);
                 if ($position === false) {
                     throw ValidationException::withMessages(['tahun_ajaran' => 'Ada siswa tanpa tingkat yang valid: '.$item->siswa->nama_lengkap]);
                 }
-                if ($position === 11) {
+                $decision = $decisions->get($item->siswa_id);
+                if ($position === 11 && !in_array($decision, ['Belum lulus', 'Tinggal kelas'], true)) {
                     $item->siswa->update(['is_aktif'=>false, 'lulus_pada_tahun_ajaran_id'=>$current->id]);
                     continue;
                 }
-                $nextLevel = $position + 1;
+                $nextLevel = in_array($decision, ['Tinggal kelas', 'Belum lulus'], true) ? $position : $position + 1;
                 PenugasanSiswaKelas::create([
                     'siswa_id'=>$item->siswa_id, 'kelas_id'=>$item->kelas_id, 'tahun_ajaran_id'=>$next->id,
                     'tingkat'=>self::LEVELS[$nextLevel], 'fase'=>match (true) {
@@ -89,6 +91,6 @@ class YearClosureController extends Controller
             ActivityLog::log('Menutup tahun ajaran '.$current->label.' dan membuka '.$next->label, $current, 'Ditutup');
             return $next;
         });
-        return redirect()->route('admin.tahun-ajaran.index')->with('success', 'Tahun ajaran ditutup. '.$next->label.' aktif; siswa kelas XII ditandai lulus.');
+        return redirect()->route('admin.tahun-ajaran.index')->with('success', 'Tahun ajaran ditutup. '.$next->label.' aktif; keputusan khusus siswa tetap dihormati.');
     }
 }

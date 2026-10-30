@@ -33,7 +33,7 @@
     @if($periode?->semester === 'Genap' && !$periode->ditutup_pada)
         <section class="panel space-y-3">
             <h2>Tutup Tahun Ajaran</h2>
-            <p>Periode berikutnya: {{ (int) substr($periode->tahun, 5, 4) }}/{{ (int) substr($periode->tahun, 5, 4) + 1 }} · Semester Ganjil. {{ $graduatingCount }} siswa kelas XII ditandai lulus; siswa lain naik satu tingkat. Penugasan disalin, nilai dan rapor baru dimulai kosong.</p>
+            <p>Periode berikutnya: {{ (int) substr($periode->tahun, 5, 4) }}/{{ (int) substr($periode->tahun, 5, 4) + 1 }} · Semester Ganjil. {{ $graduatingCount }} siswa kelas XII ditandai lulus. Siswa lain naik satu tingkat, kecuali yang memiliki keputusan “Tinggal kelas” atau “Belum lulus”. Penugasan disalin, nilai dan rapor baru dimulai kosong.</p>
             <form method="POST" action="{{ route('admin.tahun-ajaran.tutup-tahun', $periode->id) }}" data-confirm="Tutup tahun ajaran dan buat periode Ganjil berikutnya? Tindakan ini memindahkan siswa aktif ke tingkat berikutnya.">
                 @csrf
                 <button class="btn" @disabled(!$periode->pengisian_ditutup_pada || $progress->sum('total') === 0 || $progress->sum('disetujui') !== $progress->sum('total'))>Tutup Tahun Ajaran</button>

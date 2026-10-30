@@ -48,7 +48,7 @@
                     <textarea x-ref="catatan" aria-label="Catatan wali kelas" name="catatan_wali" rows="4" maxlength="5000" placeholder="Tulis pesan dan saran untuk siswa">{{ old('catatan_wali', $data['catatan']) }}</textarea>
                 </div>
                 <div class="grid sm:grid-cols-2 gap-4"><label>Tanggal rapor<input type="date" name="tgl_rapor" value="{{ old('tgl_rapor', $rapor?->tgl_rapor?->format('Y-m-d')) }}"></label>
-                <label>Keputusan akhir tahun (bila berlaku)<select name="keputusan"><option value="">Belum / tidak ditetapkan</option>@foreach(['Naik ke kelas berikutnya','Tinggal kelas','Lulus','Belum lulus'] as $decision)<option @selected(old('keputusan', $data['keputusan']) === $decision)>{{ $decision }}</option>@endforeach</select></label></div>
+                <label>Keputusan akhir tahun (bila berlaku)<select name="keputusan"><option value="">Belum / tidak ditetapkan</option>@foreach(['Naik ke kelas berikutnya','Tinggal kelas','Lulus','Belum lulus'] as $decision)<option @selected(old('keputusan', $data['keputusan']) === $decision)>{{ $decision }}</option>@endforeach</select><small class="mt-1 block text-gray-500">Umumnya siswa naik kelas. Pilih “Tinggal kelas” atau “Belum lulus” hanya jika sudah diputuskan sekolah.</small></label></div>
                 <button class="btn">Simpan evaluasi</button>
             </fieldset>
             <a class="link" href="{{ route('wali.rapor.show', $selected->id) }}">Periksa kelengkapan dan preview rapor</a>

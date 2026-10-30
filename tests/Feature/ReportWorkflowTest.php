@@ -261,6 +261,28 @@ class ReportWorkflowTest extends TestCase
         $this->post(route('admin.tahun-ajaran.tutup-tahun', $this->year->id))->assertStatus(422);
     }
 
+    public function test_year_closure_respects_explicit_exceptional_student_decisions(): void
+    {
+        $this->year->update(['semester'=>'Genap','pengisian_ditutup_pada'=>now()]);
+        $this->report->update(['status'=>'disetujui','keputusan'=>'Tinggal kelas']);
+        Rapor::create(['siswa_id'=>$this->outsider->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui']);
+        $student = Siswa::create(['nama_lengkap'=>'Siswa Belum Lulus','nisn'=>'1234567896',
+            'jenis_kelamin'=>'P','kekhususan'=>'Tunarungu']);
+        PenugasanSiswaKelas::create(['siswa_id'=>$student->id,'kelas_id'=>$this->kelas->id,
+            'tahun_ajaran_id'=>$this->year->id,'tingkat'=>'XII','fase'=>'F']);
+        Rapor::create(['siswa_id'=>$student->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui','keputusan'=>'Belum lulus']);
+
+        $this->actingAs($this->admin)->post(route('admin.tahun-ajaran.tutup-tahun', $this->year->id))->assertRedirect();
+        $next = TahunAjaran::where('tahun','2027/2028')->where('semester','Ganjil')->firstOrFail();
+        $this->assertDatabaseHas('penugasan_siswa_kelas', ['siswa_id'=>$this->student->id,
+            'tahun_ajaran_id'=>$next->id,'tingkat'=>'VIII']);
+        $this->assertDatabaseHas('penugasan_siswa_kelas', ['siswa_id'=>$student->id,
+            'tahun_ajaran_id'=>$next->id,'tingkat'=>'XII']);
+        $this->assertTrue($student->fresh()->is_aktif);
+    }
+
     public function test_removed_class_assignments_are_archived_and_reused_when_selected_again(): void
     {
         $assignment = PenugasanSiswaKelas::where('siswa_id', $this->student->id)->firstOrFail();
