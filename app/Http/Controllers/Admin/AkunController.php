@@ -105,7 +105,7 @@ class AkunController extends Controller
         $email = $user->email;
         $user->delete();
 
-        ActivityLog::log("Menghapus akun pengguna: {$email}", null, 'Sukses');
+        ActivityLog::log("Mengarsipkan akun pengguna: {$email}", $user, 'Diarsipkan');
 
         return redirect()->route('admin.akun.index')->with('success', "Akun {$email} berhasil dihapus.");
     }

@@ -107,6 +107,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Arsip
     Route::get('/arsip', [\App\Http\Controllers\ReportController::class, 'arsip'])->name('arsip.index');
+    Route::get('/data-terhapus', [\App\Http\Controllers\Admin\DeletedDataController::class, 'index'])->name('data-terhapus.index');
+    Route::post('/data-terhapus/{type}/{id}/restore', [\App\Http\Controllers\Admin\DeletedDataController::class, 'restore'])->name('data-terhapus.restore');
 
     // Log Aktivitas
     Route::get('/log-aktivitas', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('log.index');

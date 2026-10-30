@@ -137,6 +137,15 @@
                 Arsip
             </x-sidebar.item>
 
+            <x-sidebar.item href="{{ route('admin.data-terhapus.index') }}" :active="request()->routeIs('admin.data-terhapus.*')">
+                <x-slot:icon>
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M6 7l1 13h10l1-13M9 7V4h6v3M10 11v5m4-5v5"/>
+                    </svg>
+                </x-slot:icon>
+                Data Terhapus
+            </x-sidebar.item>
+
             <x-sidebar.item href="{{ route('admin.log.index') }}" :active="request()->routeIs('admin.log.*')">
                 <x-slot:icon>
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">

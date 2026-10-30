@@ -193,6 +193,19 @@ class ReportWorkflowTest extends TestCase
             ->assertHeader('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
+    public function test_deleting_parent_contact_archives_it_without_removing_student(): void
+    {
+        $parent = OrangTua::where('siswa_id', $this->student->id)->firstOrFail();
+        $this->actingAs($this->admin)->delete(route('admin.orang-tua.destroy', $parent->id))->assertRedirect();
+        $this->assertSoftDeleted('orang_tua', ['id'=>$parent->id]);
+        $this->assertDatabaseHas('siswa', ['id'=>$this->student->id]);
+        $this->assertNull(OrangTua::find($parent->id));
+        $this->assertNotNull(OrangTua::withTrashed()->find($parent->id));
+        $this->get(route('admin.data-terhapus.index'))->assertOk()->assertSee($parent->nama);
+        $this->post(route('admin.data-terhapus.restore', ['type'=>'orang-tua','id'=>$parent->id]))->assertRedirect();
+        $this->assertNotNull(OrangTua::find($parent->id));
+    }
+
     public function test_evaluation_saves_achievements_and_extracurricular_grades(): void
     {
         $activity=Ekstrakurikuler::create(['nama'=>'Pramuka']);
