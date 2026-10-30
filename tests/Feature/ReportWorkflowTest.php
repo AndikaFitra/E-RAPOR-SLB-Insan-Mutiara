@@ -173,6 +173,26 @@ class ReportWorkflowTest extends TestCase
             ->assertOk()->assertSeeInOrder(['Siswa Pengujian','Siswa Kelas Lain']);
     }
 
+    public function test_wali_dashboard_cards_link_to_their_pages(): void
+    {
+        $this->actingAs($this->wali)->get(route('wali.dashboard'))->assertOk()
+            ->assertSee('href="'.route('wali.asesmen.index').'"', false)
+            ->assertSee('href="'.route('wali.nonakademik.index').'"', false)
+            ->assertSee('href="'.route('wali.rapor.index', ['status'=>'dikembalikan']).'"', false);
+    }
+
+    public function test_parent_link_previews_named_pdf_while_download_remains_available(): void
+    {
+        $this->actingAs($this->wali)->post(route('wali.rapor.submit', $this->student->id))->assertRedirect();
+        $this->actingAs($this->kepala)->post(route('kepala.persetujuan.approve', $this->report->id))->assertRedirect();
+        $rapor = $this->report->fresh();
+        $filename = 'Rapor_siswa-pengujian_1234567890_ganjil_2026-2027.pdf';
+        $this->get(route('reports.shared', $rapor->share_token))->assertOk()
+            ->assertHeader('Content-Disposition', 'inline; filename="'.$filename.'"');
+        $this->get(route('reports.cetak', ['id'=>$rapor->id, 'pdf'=>1]))->assertOk()
+            ->assertHeader('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    }
+
     public function test_evaluation_saves_achievements_and_extracurricular_grades(): void
     {
         $activity=Ekstrakurikuler::create(['nama'=>'Pramuka']);
