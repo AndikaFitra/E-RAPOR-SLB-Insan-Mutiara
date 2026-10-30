@@ -110,7 +110,10 @@ class SiswaController extends Controller
             $siswa->save();
             if(!empty($input['kelas_id'])) {
                 abort_unless($periode,422,'Aktifkan tahun ajaran sebelum menetapkan kelas.');
-                PenugasanSiswaKelas::updateOrCreate(['siswa_id'=>$siswa->id,'tahun_ajaran_id'=>$periode->id],['kelas_id'=>$input['kelas_id'],'tingkat'=>$input['tingkat'],'fase'=>$input['fase']]);
+                $assignment = PenugasanSiswaKelas::withTrashed()->firstOrNew(['siswa_id'=>$siswa->id,'tahun_ajaran_id'=>$periode->id]);
+                $assignment->fill(['kelas_id'=>$input['kelas_id'],'tingkat'=>$input['tingkat'],'fase'=>$input['fase']]);
+                $assignment->deleted_at = null;
+                $assignment->save();
                 $wali = \App\Models\PenugasanWaliKelas::where('kelas_id', $input['kelas_id'])->where('tahun_ajaran_id', $periode->id)->first();
                 if ($wali) Rapor::where('siswa_id', $siswa->id)->where('tahun_ajaran_id', $periode->id)->whereIn('status', ['draft', 'dikembalikan'])->update(['wali_kelas_id' => $wali->guru_id]);
             } elseif($old) $old->delete();
