@@ -15,7 +15,7 @@ $back = \App\Support\BackNavigation::current();
     <!-- Active Academic Period -->
     <div class="topbar-period flex min-w-0 items-center gap-2.5">
         @if($back)
-            <a href="{{ $back['url'] }}" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E8E7ED] text-[#555783] transition-colors hover:border-[#555783] hover:bg-[#F3F2F8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#555783]" aria-label="Kembali ke {{ $back['label'] }}" title="Kembali ke {{ $back['label'] }}">
+            <a href="{{ $back['url'] }}" data-context-back class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#E8E7ED] text-[#555783] transition-colors hover:border-[#555783] hover:bg-[#F3F2F8] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#555783]" aria-label="Kembali ke {{ $back['label'] }}" title="Kembali ke {{ $back['label'] }}">
                 <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19 12H5m7 7-7-7 7-7"/></svg>
             </a>
         @endif

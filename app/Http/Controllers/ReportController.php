@@ -6,6 +6,7 @@ use App\Models\{ActivityLog, Rapor, Siswa, TahunAjaran};
 use App\Services\RaporService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class ReportController extends Controller
 {
@@ -44,13 +45,18 @@ class ReportController extends Controller
         return $request->boolean('pdf') ? $this->download($data, $rapor) : view('reports.document', compact('data'));
     }
 
-    public function download(array $data, ?Rapor $rapor)
+    public function download(array $data, ?Rapor $rapor, bool $inline = false)
     {
         $bytes = $rapor?->isDisetujui() && $rapor->pdf_path && Storage::disk('local')->exists($rapor->pdf_path)
             ? Storage::disk('local')->get($rapor->pdf_path) : $this->reports->pdf($data);
+        $name = Str::slug($data['siswa']['nama_lengkap'] ?? 'siswa', '-');
+        $nisn = preg_replace('/[^0-9]/', '', (string) ($data['siswa']['nisn'] ?? ''));
+        $semester = Str::slug($data['semester'] ?? 'semester', '-');
+        $tahun = str_replace('/', '-', (string) ($data['tahun'] ?? 'tahun-ajaran'));
+        $filename = "Rapor_{$name}_{$nisn}_{$semester}_{$tahun}.pdf";
         return response($bytes, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="rapor-'.($rapor?->id ?? $data['siswa']['id']).'.pdf"',
+            'Content-Disposition' => ($inline ? 'inline' : 'attachment').'; filename="'.$filename.'"',
             'Cache-Control' => 'private, no-store',
         ]);
     }
@@ -59,6 +65,6 @@ class ReportController extends Controller
     {
         $rapor = Rapor::where('share_token', $token)->where('status', Rapor::STATUS_DISETUJUI)->firstOrFail();
         abort_unless($rapor->snapshot, 404);
-        return $this->download($rapor->snapshot, $rapor)->header('X-Robots-Tag', 'noindex, nofollow')->header('Referrer-Policy', 'no-referrer');
+        return $this->download($rapor->snapshot, $rapor, true)->header('X-Robots-Tag', 'noindex, nofollow')->header('Referrer-Policy', 'no-referrer');
     }
 }

@@ -75,6 +75,9 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/tahun-ajaran', [\App\Http\Controllers\Admin\SettingsController::class, 'years'])->name('tahun-ajaran.index');
     Route::post('/tahun-ajaran', [\App\Http\Controllers\Admin\SettingsController::class, 'saveYear'])->name('tahun-ajaran.store');
     Route::post('/tahun-ajaran/{id}/aktifkan', [TahunAjaranController::class, 'setAktif'])->name('tahun-ajaran.aktifkan');
+    Route::post('/tahun-ajaran/{id}/tutup-pengisian', [\App\Http\Controllers\Admin\ReportEntryController::class, 'close'])->name('tahun-ajaran.tutup-pengisian');
+    Route::post('/tahun-ajaran/{id}/buka-pengisian', [\App\Http\Controllers\Admin\ReportEntryController::class, 'reopen'])->name('tahun-ajaran.buka-pengisian');
+    Route::post('/tahun-ajaran/{id}/tutup-tahun', [\App\Http\Controllers\Admin\YearClosureController::class, 'close'])->name('tahun-ajaran.tutup-tahun');
 
     // Orang Tua / Wali
     Route::get('/orang-tua', [OrangTuaController::class, 'index'])->name('orang-tua.index');
@@ -107,6 +110,8 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Arsip
     Route::get('/arsip', [\App\Http\Controllers\ReportController::class, 'arsip'])->name('arsip.index');
+    Route::get('/data-terhapus', [\App\Http\Controllers\Admin\DeletedDataController::class, 'index'])->name('data-terhapus.index');
+    Route::post('/data-terhapus/{type}/{id}/restore', [\App\Http\Controllers\Admin\DeletedDataController::class, 'restore'])->name('data-terhapus.restore');
 
     // Log Aktivitas
     Route::get('/log-aktivitas', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('log.index');

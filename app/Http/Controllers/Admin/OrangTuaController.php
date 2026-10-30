@@ -105,7 +105,7 @@ class OrangTuaController extends Controller
         if ($ot->distribusi()->exists()) return back()->with('error','Kontak mempunyai riwayat distribusi. Perbaiki kontak melalui Edit.');
         $ot->delete();
 
-        ActivityLog::log('Menghapus data orang tua: ' . $nama, null, 'Hapus');
+        ActivityLog::log('Mengarsipkan data orang tua: ' . $nama, $ot, 'Diarsipkan');
 
         return redirect()->route('admin.orang-tua.index')
             ->with('success', 'Data orang tua ' . $nama . ' berhasil dihapus.');

@@ -109,7 +109,7 @@ class KelasController extends Controller
         }
         $kelas->delete();
 
-        ActivityLog::log('Menghapus data kelas: ' . $nama, null, 'Hapus');
+        ActivityLog::log('Mengarsipkan data kelas: ' . $nama, $kelas, 'Diarsipkan');
 
         return redirect()->route('admin.kelas.index')
             ->with('success', 'Kelas ' . $nama . ' berhasil dihapus dari sistem.');

@@ -100,7 +100,7 @@ class MataPelajaranController extends Controller
         }
         $mapel->delete();
 
-        ActivityLog::log('Menghapus mata pelajaran: ' . $nama, null, 'Hapus');
+        ActivityLog::log('Mengarsipkan mata pelajaran: ' . $nama, $mapel, 'Diarsipkan');
 
         return redirect()->route('admin.mapel.index')
             ->with('success', 'Mata pelajaran ' . $nama . ' berhasil dihapus dari kurikulum.');

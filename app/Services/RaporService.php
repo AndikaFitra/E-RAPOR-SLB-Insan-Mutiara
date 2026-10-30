@@ -58,7 +58,8 @@ class RaporService
     public function editable(Siswa $siswa, TahunAjaran $periode): Rapor
     {
         $this->authorize($siswa, $periode->id);
-        abort_unless($periode->is_aktif, 422, 'Periode arsip tidak dapat diubah.');
+        $periode = TahunAjaran::whereKey($periode->id)->lockForUpdate()->firstOrFail();
+        abort_unless($periode->isPengisianTerbuka(), 422, 'Pengisian rapor periode ini sudah ditutup atau melewati batas waktu. Hubungi admin sekolah.');
         Siswa::whereKey($siswa->id)->lockForUpdate()->firstOrFail();
         $assignment = $this->penugasan($siswa, $periode->id);
         $wali = PenugasanWaliKelas::where('kelas_id', $assignment?->kelas_id)

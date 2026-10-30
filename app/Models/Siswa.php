@@ -21,6 +21,7 @@ class Siswa extends Model
         'kekhususan',
         'no_hp',
         'is_aktif',
+        'lulus_pada_tahun_ajaran_id',
     ];
 
     protected function casts(): array

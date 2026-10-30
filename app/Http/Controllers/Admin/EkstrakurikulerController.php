@@ -71,7 +71,7 @@ class EkstrakurikulerController extends Controller
         }
         $ekskul->delete();
 
-        ActivityLog::log('Menghapus ekstrakurikuler: ' . $nama, null, 'Hapus');
+        ActivityLog::log('Mengarsipkan ekstrakurikuler: ' . $nama, $ekskul, 'Diarsipkan');
 
         return redirect()->route('admin.ekskul.index')
             ->with('success', 'Ekstrakurikuler ' . $nama . ' berhasil dihapus.');

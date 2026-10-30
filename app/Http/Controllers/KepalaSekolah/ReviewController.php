@@ -26,7 +26,9 @@ class ReviewController extends Controller
             ->when($request->kelas_id, fn ($q) => $q->whereHas('siswa.penugasanKelas', fn ($s) => $s->where('tahun_ajaran_id', $periode->id)->where('kelas_id', $request->kelas_id)))
             ->when($request->kekhususan, fn ($q) => $q->whereHas('siswa', fn ($s) => $s->where('kekhususan', $request->kekhususan)));
         $counts = (clone $query)->get()->countBy('status');
-        $rows = $query->when($request->status, fn ($q) => $q->where('status', $request->status))->latest('tgl_pengajuan')->get()
+        $rows = $query->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->orderByRaw("CASE status WHEN 'diajukan' THEN 0 WHEN 'dikembalikan' THEN 1 ELSE 2 END")
+            ->orderByDesc('tgl_pengajuan')->get()
             ->map(fn ($r) => ['rapor' => $r, 'data' => $data = $this->reports->data($r->siswa, $periode, $r), 'checklist' => $this->reports->checklist($data)]);
         return view('academic.persetujuan', compact('periode', 'tahunList', 'kelasList', 'counts', 'rows'));
     }

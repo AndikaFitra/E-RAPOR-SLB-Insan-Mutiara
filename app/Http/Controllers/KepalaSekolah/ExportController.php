@@ -3,13 +3,17 @@
 namespace App\Http\Controllers\KepalaSekolah;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Kelas, MataPelajaran, TahunAjaran};
+use App\Models\{Kelas, MataPelajaran, Sekolah, TahunAjaran};
 use App\Services\LegerService;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ExportController extends Controller
@@ -40,9 +44,29 @@ class ExportController extends Controller
             $sheet = $book->getActiveSheet();
             $sheet->setTitle('Leger');
             $headers = ['Siswa', 'NISN', 'Kelas', 'Tingkat / Fase', 'Periode', ...$result['subjects']->pluck('nama')->all(), 'Rata-rata', 'Status'];
+            $lastColumn = Coordinate::stringFromColumnIndex(count($headers));
+            $sheet->mergeCells("A1:{$lastColumn}1");
+            $sheet->mergeCells("A2:{$lastColumn}2");
+            $sheet->mergeCells("A3:{$lastColumn}3");
+            $sheet->setCellValue('A1', strtoupper(Sekolah::instance()->nama));
+            $sheet->setCellValue('A2', 'LEGER / REKAP NILAI · '.$result['periode']->label);
+            $sheet->setCellValue('A3', 'Ketuntasan: '.(config('rapor.nilai_tuntas') === null ? 'belum ditetapkan oleh sekolah' : 'nilai minimum '.config('rapor.nilai_tuntas')).' · '.$result['rows']->count().' siswa');
+            $sheet->getStyle("A1:{$lastColumn}1")->getFont()->setBold(true)->setSize(15)->getColor()->setRGB('33385F');
+            $sheet->getStyle("A2:{$lastColumn}2")->getFont()->setBold(true)->setSize(11);
+            $sheet->getStyle("A3:{$lastColumn}3")->getFont()->setSize(9)->getColor()->setRGB('666666');
+            $sheet->getRowDimension(1)->setRowHeight(30);
+            $sheet->getRowDimension(2)->setRowHeight(24);
+            $sheet->getRowDimension(3)->setRowHeight(21);
             foreach ($headers as $col => $header) {
-                $sheet->setCellValueExplicit([$col + 1, 1], $header, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit([$col + 1, 4], $header, DataType::TYPE_STRING);
+                $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($col + 1))->setWidth(match ($col) { 0 => 28, 1 => 16, 2 => 22, 3 => 17, 4 => 23, default => 20 });
             }
+            $sheet->getStyle("A4:{$lastColumn}4")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '555783']],
+                'alignment' => ['vertical' => Alignment::VERTICAL_CENTER, 'wrapText' => true],
+            ]);
+            $sheet->getRowDimension(4)->setRowHeight(32);
             foreach ($result['rows'] as $index => $row) {
                 $data = $row['data'];
                 $values = [$data['siswa']['nama_lengkap'], $data['siswa']['nisn'], $data['kelas'], $data['tingkat'].' / '.$data['fase'], $data['tahun'].' '.$data['semester']];
@@ -52,11 +76,19 @@ class ExportController extends Controller
                 $values[] = $row['rata'] !== null ? round($row['rata'], 2) : null;
                 $values[] = $row['status'];
                 foreach ($values as $col => $value) {
-                    $sheet->setCellValueExplicit([$col + 1, $index + 2], $value ?? '', is_int($value) || is_float($value) ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
+                    $sheet->setCellValueExplicit([$col + 1, $index + 5], $value ?? '', is_int($value) || is_float($value) ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
                 }
+                if ($index % 2 === 1) $sheet->getStyle('A'.($index + 5).':'.$lastColumn.($index + 5))->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F7F6F2');
             }
-            $sheet->freezePane('F2');
-            $sheet->setAutoFilter($sheet->calculateWorksheetDimension());
+            $lastRow = $result['rows']->count() + 4;
+            $sheet->getStyle("A4:{$lastColumn}{$lastRow}")->getBorders()->getBottom()->setBorderStyle(Border::BORDER_HAIR)->getColor()->setRGB('D8DAE4');
+            $sheet->getStyle("A5:{$lastColumn}{$lastRow}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
+            $sheet->getStyle("B5:B{$lastRow}")->getNumberFormat()->setFormatCode('@');
+            $sheet->getStyle("F5:{$lastColumn}{$lastRow}")->getNumberFormat()->setFormatCode('0.##');
+            $sheet->freezePane('F5');
+            $sheet->setAutoFilter("A4:{$lastColumn}{$lastRow}");
+            $sheet->getPageSetup()->setOrientation('landscape')->setFitToWidth(1)->setFitToHeight(0);
+            $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 4);
             // Render before returning the response so errors can be reported in the UI.
             ob_start();
             try {

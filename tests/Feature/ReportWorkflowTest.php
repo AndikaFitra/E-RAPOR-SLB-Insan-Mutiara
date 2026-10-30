@@ -52,6 +52,33 @@ class ReportWorkflowTest extends TestCase
         return ['kelas_id'=>$this->kelas->id,'mapel_id'=>$this->subject->id,'nilai'=>[['siswa_id'=>$this->student->id,'nilai_akhir'=>$value,'narasi_capaian'=>$value === null ? null : 'Narasi hasil pembaruan.']]];
     }
 
+    public function test_admin_student_filters_use_current_assignment_and_active_status(): void
+    {
+        $inactive = Siswa::create(['nama_lengkap'=>'A Siswa Nonaktif','nisn'=>'1234567892','jenis_kelamin'=>'P','kekhususan'=>'Autis','is_aktif'=>false]);
+        PenugasanSiswaKelas::create(['siswa_id'=>$inactive->id,'kelas_id'=>$this->kelas->id,'tahun_ajaran_id'=>$this->year->id,'tingkat'=>'IX','fase'=>'D']);
+
+        $this->actingAs($this->admin)->get(route('admin.siswa.index'))
+            ->assertOk()->assertSeeInOrder(['Siswa Kelas Lain','Siswa Pengujian','A Siswa Nonaktif']);
+        $this->get(route('admin.siswa.index', ['tingkat'=>'VIII','status'=>'aktif']))
+            ->assertOk()->assertSee('Siswa Pengujian')->assertDontSee('A Siswa Nonaktif');
+        $this->get(route('admin.siswa.index', ['tingkat'=>'IX','kekhususan'=>'Autis','status'=>'nonaktif']))
+            ->assertOk()->assertSee('A Siswa Nonaktif')->assertDontSee('Siswa Pengujian');
+    }
+
+    public function test_admin_student_form_requires_nis_and_marks_invalid_fields(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.siswa.store'), [
+            'nama_lengkap'=>str_repeat('A', 101), 'nis'=>'', 'nisn'=>'1234567893',
+            'jenis_kelamin'=>'L', 'kekhususan'=>'Tunarungu', 'is_aktif'=>'1',
+        ])->assertSessionHasErrors(['nama_lengkap','nis']);
+
+        $this->get(route('admin.siswa.create'))->assertOk()
+            ->assertSee('Kolom nama lengkap maksimal 100 karakter.')
+            ->assertSee('Kolom NIS wajib diisi.')
+            ->assertSee('aria-invalid="true"', false)
+            ->assertSee('<select name="agama"', false);
+    }
+
     public function test_wali_only_sees_assigned_students(): void
     {
         $this->actingAs($this->wali)->get(route('wali.rapor.index'))->assertOk()->assertSee('Siswa Pengujian')->assertDontSee('Siswa Kelas Lain');
@@ -124,15 +151,114 @@ class ReportWorkflowTest extends TestCase
             file_put_contents($path, $response->getContent());
             $book = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
             $sheet = $book->getActiveSheet();
-            $this->assertSame('1234567890', $sheet->getCell('B3')->getValue());
-            $this->assertEquals(37, $sheet->getCell('F3')->getValue());
-            $this->assertEquals(37, $sheet->getCell('G3')->getValue());
-            $this->assertSame('Belum ditetapkan', $sheet->getCell('H3')->getValue());
+            $this->assertSame('LEGER / REKAP NILAI · '.$this->year->label, $sheet->getCell('A2')->getValue());
+            $this->assertSame('Siswa', $sheet->getCell('A4')->getValue());
+            $this->assertSame('1234567890', $sheet->getCell('B6')->getValue());
+            $this->assertEquals(37, $sheet->getCell('F6')->getValue());
+            $this->assertEquals(37, $sheet->getCell('G6')->getValue());
+            $this->assertSame('Belum ditetapkan', $sheet->getCell('H6')->getValue());
             $book->disconnectWorksheets();
         } finally {
             unlink($path);
         }
         $this->get(route('kepala.leger.export',['format'=>'pdf','minimum'=>90]))->assertRedirect()->assertSessionHas('error');
+    }
+
+    public function test_headmaster_review_lists_submitted_reports_first(): void
+    {
+        $this->report->update(['status'=>'diajukan','tgl_pengajuan'=>'2026-10-01']);
+        Rapor::create(['siswa_id'=>$this->outsider->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui','tgl_pengajuan'=>'2026-10-20']);
+        $this->actingAs($this->kepala)->get(route('kepala.persetujuan.index'))
+            ->assertOk()->assertSeeInOrder(['Siswa Pengujian','Siswa Kelas Lain']);
+    }
+
+    public function test_wali_dashboard_cards_link_to_their_pages(): void
+    {
+        $this->actingAs($this->wali)->get(route('wali.dashboard'))->assertOk()
+            ->assertSee('href="'.route('wali.asesmen.index').'"', false)
+            ->assertSee('href="'.route('wali.nonakademik.index').'"', false)
+            ->assertSee('href="'.route('wali.rapor.index', ['status'=>'dikembalikan']).'"', false);
+    }
+
+    public function test_parent_link_previews_named_pdf_while_download_remains_available(): void
+    {
+        $this->actingAs($this->wali)->post(route('wali.rapor.submit', $this->student->id))->assertRedirect();
+        $this->actingAs($this->kepala)->post(route('kepala.persetujuan.approve', $this->report->id))->assertRedirect();
+        $rapor = $this->report->fresh();
+        $filename = 'Rapor_siswa-pengujian_1234567890_ganjil_2026-2027.pdf';
+        $this->get(route('reports.shared', $rapor->share_token))->assertOk()
+            ->assertHeader('Content-Disposition', 'inline; filename="'.$filename.'"');
+        $this->get(route('reports.cetak', ['id'=>$rapor->id, 'pdf'=>1]))->assertOk()
+            ->assertHeader('Content-Disposition', 'attachment; filename="'.$filename.'"');
+    }
+
+    public function test_deleting_parent_contact_archives_it_without_removing_student(): void
+    {
+        $parent = OrangTua::where('siswa_id', $this->student->id)->firstOrFail();
+        $this->actingAs($this->admin)->delete(route('admin.orang-tua.destroy', $parent->id))->assertRedirect();
+        $this->assertSoftDeleted('orang_tua', ['id'=>$parent->id]);
+        $this->assertDatabaseHas('siswa', ['id'=>$this->student->id]);
+        $this->assertNull(OrangTua::find($parent->id));
+        $this->assertNotNull(OrangTua::withTrashed()->find($parent->id));
+        $this->get(route('admin.data-terhapus.index'))->assertOk()->assertSee($parent->nama);
+        $this->post(route('admin.data-terhapus.restore', ['type'=>'orang-tua','id'=>$parent->id]))->assertRedirect();
+        $this->assertNotNull(OrangTua::find($parent->id));
+    }
+
+    public function test_admin_closes_report_entry_after_all_approvals_and_can_reopen_with_audit(): void
+    {
+        $this->actingAs($this->admin)->post(route('admin.tahun-ajaran.tutup-pengisian', $this->year->id))
+            ->assertSessionHasErrors('pengisian');
+        $this->report->update(['status'=>'disetujui']);
+        Rapor::create(['siswa_id'=>$this->outsider->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui']);
+        $this->post(route('admin.tahun-ajaran.tutup-pengisian', $this->year->id))->assertRedirect();
+        $this->assertNotNull($this->year->fresh()->pengisian_ditutup_pada);
+
+        $newStudent = Siswa::create(['nama_lengkap'=>'Siswa Baru','nisn'=>'1234567894','jenis_kelamin'=>'P','kekhususan'=>'Tunarungu']);
+        PenugasanSiswaKelas::create(['siswa_id'=>$newStudent->id,'kelas_id'=>$this->kelas->id,'tahun_ajaran_id'=>$this->year->id,'tingkat'=>'VIII','fase'=>'D']);
+        $payload = ['kelas_id'=>$this->kelas->id,'mapel_id'=>$this->subject->id,
+            'nilai'=>[['siswa_id'=>$newStudent->id,'nilai_akhir'=>80,'narasi_capaian'=>'Capaian baru.']]];
+        $this->actingAs($this->wali)->post(route('wali.asesmen.store'), $payload)->assertStatus(422);
+        $this->actingAs($this->admin)->post(route('admin.tahun-ajaran.buka-pengisian', $this->year->id),
+            ['alasan'=>'Memperbaiki data siswa baru'])->assertRedirect();
+        $this->assertNull($this->year->fresh()->pengisian_ditutup_pada);
+        $this->actingAs($this->wali)->post(route('wali.asesmen.store'), $payload)->assertRedirect();
+    }
+
+    public function test_report_entry_deadline_blocks_wali_edits_until_admin_extends_it(): void
+    {
+        $this->year->update(['batas_pengisian'=>today()->subDay()]);
+        $this->actingAs($this->wali)->post(route('wali.asesmen.store'), $this->scorePayload())->assertStatus(422);
+        $this->year->update(['batas_pengisian'=>today()->addDay()]);
+        $this->post(route('wali.asesmen.store'), $this->scorePayload())->assertRedirect();
+    }
+
+    public function test_closing_genap_promotes_students_and_graduates_class_twelve_without_copying_scores(): void
+    {
+        $this->year->update(['semester'=>'Genap','pengisian_ditutup_pada'=>now()]);
+        $this->report->update(['status'=>'disetujui']);
+        Rapor::create(['siswa_id'=>$this->outsider->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui']);
+        $graduate = Siswa::create(['nama_lengkap'=>'Siswa Kelas XII','nisn'=>'1234567895','jenis_kelamin'=>'P','kekhususan'=>'Tunarungu']);
+        PenugasanSiswaKelas::create(['siswa_id'=>$graduate->id,'kelas_id'=>$this->kelas->id,
+            'tahun_ajaran_id'=>$this->year->id,'tingkat'=>'XII','fase'=>'F']);
+        Rapor::create(['siswa_id'=>$graduate->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui']);
+
+        $this->actingAs($this->admin)->post(route('admin.tahun-ajaran.tutup-tahun', $this->year->id))->assertRedirect();
+        $next = TahunAjaran::where('tahun','2027/2028')->where('semester','Ganjil')->firstOrFail();
+        $this->assertTrue($next->is_aktif);
+        $this->assertFalse($this->year->fresh()->is_aktif);
+        $this->assertDatabaseHas('penugasan_siswa_kelas', ['siswa_id'=>$this->student->id,
+            'tahun_ajaran_id'=>$next->id,'tingkat'=>'IX','fase'=>'D']);
+        $this->assertDatabaseHas('siswa', ['id'=>$graduate->id,'is_aktif'=>false,
+            'lulus_pada_tahun_ajaran_id'=>$this->year->id]);
+        $this->assertDatabaseMissing('penugasan_siswa_kelas', ['siswa_id'=>$graduate->id,'tahun_ajaran_id'=>$next->id]);
+        $this->assertDatabaseMissing('nilai_asesmen', ['siswa_id'=>$this->student->id,'tahun_ajaran_id'=>$next->id]);
+        $this->assertDatabaseMissing('rapor', ['siswa_id'=>$this->student->id,'tahun_ajaran_id'=>$next->id]);
+        $this->post(route('admin.tahun-ajaran.tutup-tahun', $this->year->id))->assertStatus(422);
     }
 
     public function test_evaluation_saves_achievements_and_extracurricular_grades(): void

@@ -60,13 +60,7 @@
             </div>
 
             <!-- Filter Dropdowns Row -->
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
-                <div>
-                    <select name="tahun" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
-                        <option value="">Tahun: 2026/2027</option>
-                        <option value="2025/2026">Tahun: 2025/2026</option>
-                    </select>
-                </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                 <div>
                     <select name="kelas_id" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
                         <option value="">Kelas: Semua</option>
@@ -88,16 +82,17 @@
                 <div>
                     <select name="tingkat" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
                         <option value="">Tingkat: Semua</option>
-                        <option value="D">Fase D (SMPLB)</option>
-                        <option value="E">Fase E (SMALB)</option>
+                        @foreach(['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'] as $tingkat)
+                            <option value="{{ $tingkat }}" @selected(request('tingkat') === $tingkat)>{{ $tingkat }}</option>
+                        @endforeach
                     </select>
                 </div>
                 <div>
                     <select name="status" onchange="this.form.submit()" class="w-full px-3 py-2 border border-[#D5D7E2] rounded-xl text-[13px] text-gray-700 focus:outline-none focus:border-[#555783] bg-white cursor-pointer">
                         <option value="">Status: Semua</option>
-                        <option value="Aktif">Aktif</option>
-                        <option value="Pindah">Pindah</option>
-                        <option value="Lulus">Lulus</option>
+                        <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
+                        <option value="nonaktif" @selected(request('status') === 'nonaktif')>Tidak aktif</option>
+                        <option value="lulus" @selected(request('status') === 'lulus')>Lulus</option>
                     </select>
                 </div>
             </div>
@@ -171,8 +166,10 @@
                                         >
                                             Nonaktifkan
                                         </button>
-                                    @else
+                                    @elseif($s['status'] === 'Tidak Aktif')
                                         <span class="inline-flex min-h-8 items-center rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-gray-500">Sudah nonaktif</span>
+                                    @else
+                                        <span class="inline-flex min-h-8 items-center rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-gray-500">Lulus</span>
                                     @endif
                                 </div>
                             </td>

@@ -20,10 +20,14 @@ class SiswaController extends Controller
             ->when($request->search,fn($q)=>$q->search($request->search))
             ->when($request->kekhususan,fn($q)=>$q->where('kekhususan',$request->kekhususan))
             ->when($request->kelas_id,fn($q)=>$q->whereHas('penugasanKelas',fn($q)=>$q->where('kelas_id',$request->kelas_id)->where('tahun_ajaran_id',$tahunAktif?->id)))
+            ->when($request->tingkat,fn($q)=>$q->whereHas('penugasanKelas',fn($q)=>$q->where('tingkat',$request->tingkat)->where('tahun_ajaran_id',$tahunAktif?->id)))
+            ->when($request->status === 'aktif',fn($q)=>$q->where('is_aktif',true))
+            ->when($request->status === 'nonaktif',fn($q)=>$q->where('is_aktif',false)->whereNull('lulus_pada_tahun_ajaran_id'))
+            ->when($request->status === 'lulus',fn($q)=>$q->where('is_aktif',false)->whereNotNull('lulus_pada_tahun_ajaran_id'))
             ->when($request->filter === 'belum_lengkap',fn($q)=>$q->where(fn($q)=>$q->whereNull('tempat_lahir')->orWhereNull('tgl_lahir')));
-        $siswaList=$query->orderBy('nama_lengkap')->get()->map(function($s) {
+        $siswaList=$query->orderByDesc('is_aktif')->orderBy('nama_lengkap')->get()->map(function($s) {
             $a=$s->penugasanAktif();
-            return ['id'=>$s->id,'nama'=>$s->nama_lengkap,'nis'=>$s->nis ?? '—','nisn'=>$s->nisn,'kelas'=>$a?->kelas?->nama ?? 'Belum ditugaskan','tingkat_fase'=>($a?->tingkat ?? '—').' / '.($a?->fase ?? '—'),'kekhususan'=>$s->kekhususan,'status'=>$s->is_aktif?'Aktif':'Tidak Aktif'];
+            return ['id'=>$s->id,'nama'=>$s->nama_lengkap,'nis'=>$s->nis ?? '—','nisn'=>$s->nisn,'kelas'=>$a?->kelas?->nama ?? 'Belum ditugaskan','tingkat_fase'=>($a?->tingkat ?? '—').' / '.($a?->fase ?? '—'),'kekhususan'=>$s->kekhususan,'status'=>$s->is_aktif?'Aktif':($s->lulus_pada_tahun_ajaran_id?'Lulus':'Tidak Aktif')];
         })->all();
         return view('admin.siswa.index',compact('tahunAktif','kelasList','siswaList'));
     }
@@ -61,13 +65,34 @@ class SiswaController extends Controller
         $input=$request->validate([
             'nama_lengkap'=>'required|string|max:100',
             'nisn'=>['required','digits:10',Rule::unique('siswa')->ignore($siswa->id)],
-            'nis'=>['nullable','string','max:30',Rule::unique('siswa')->ignore($siswa->id)],
+            'nis'=>['required','string','max:30',Rule::unique('siswa')->ignore($siswa->id)],
             'jenis_kelamin'=>'required|in:L,P','kekhususan'=>'required|in:Tunarungu,Tunagrahita,Autis',
             'tempat_lahir'=>'nullable|string|max:100','tgl_lahir'=>'nullable|date|before_or_equal:today',
-            'agama'=>'nullable|string|max:50','alamat'=>'nullable|string|max:2000',
+            'agama'=>['nullable',Rule::in(array_filter(['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu','Kepercayaan',$siswa->agama]))],'alamat'=>'nullable|string|max:2000',
             'no_hp'=>'nullable|string|max:20','tanggal_diterima'=>'nullable|date','is_aktif'=>'required|boolean',
             'kelas_id'=>'nullable|integer|exists:kelas,id','tingkat'=>'nullable|required_with:kelas_id|in:I,II,III,IV,V,VI,VII,VIII,IX,X,XI,XII',
             'fase'=>'nullable|required_with:kelas_id|in:A,B,C,D,E,F','konfirmasi_pindah'=>'sometimes|accepted',
+        ], [
+            'required'=>'Kolom :attribute wajib diisi.',
+            'required_with'=>'Kolom :attribute wajib diisi jika kelas dipilih.',
+            'string'=>'Kolom :attribute harus berupa teks.',
+            'max'=>'Kolom :attribute maksimal :max karakter.',
+            'digits'=>'Kolom :attribute harus berisi tepat :digits angka.',
+            'unique'=>'Kolom :attribute sudah digunakan siswa lain.',
+            'in'=>'Pilihan :attribute tidak tersedia.',
+            'date'=>'Kolom :attribute harus berupa tanggal yang valid.',
+            'before_or_equal'=>'Tanggal lahir tidak boleh setelah hari ini.',
+            'boolean'=>'Pilihan :attribute tidak valid.',
+            'integer'=>'Pilihan :attribute tidak valid.',
+            'exists'=>'Pilihan :attribute tidak ditemukan.',
+            'accepted'=>'Konfirmasi perpindahan kelas harus dicentang.',
+        ], [
+            'nama_lengkap'=>'nama lengkap', 'nis'=>'NIS', 'nisn'=>'NISN',
+            'jenis_kelamin'=>'jenis kelamin', 'kekhususan'=>'kekhususan',
+            'tempat_lahir'=>'tempat lahir', 'tgl_lahir'=>'tanggal lahir',
+            'agama'=>'agama', 'alamat'=>'alamat', 'no_hp'=>'nomor HP',
+            'tanggal_diterima'=>'tanggal diterima', 'is_aktif'=>'status',
+            'kelas_id'=>'kelas', 'tingkat'=>'tingkat', 'fase'=>'fase',
         ]);
         DB::transaction(function() use($input,$request,$siswa) {
             if($siswa->exists) Siswa::whereKey($siswa->id)->lockForUpdate()->firstOrFail();
@@ -80,7 +105,9 @@ class SiswaController extends Controller
             if($old && $old->kelas_id != ($input['kelas_id'] ?? null) && !$request->boolean('konfirmasi_pindah')) {
                 throw ValidationException::withMessages(['konfirmasi_pindah'=>'Centang konfirmasi perpindahan setelah memeriksa kelas tujuan.']);
             }
-            $siswa->fill(collect($input)->except(['kelas_id','tingkat','fase','konfirmasi_pindah'])->all())->save();
+            $siswa->fill(collect($input)->except(['kelas_id','tingkat','fase','konfirmasi_pindah'])->all());
+            if ($siswa->is_aktif) $siswa->lulus_pada_tahun_ajaran_id = null;
+            $siswa->save();
             if(!empty($input['kelas_id'])) {
                 abort_unless($periode,422,'Aktifkan tahun ajaran sebelum menetapkan kelas.');
                 PenugasanSiswaKelas::updateOrCreate(['siswa_id'=>$siswa->id,'tahun_ajaran_id'=>$periode->id],['kelas_id'=>$input['kelas_id'],'tingkat'=>$input['tingkat'],'fase'=>$input['fase']]);

@@ -4,6 +4,21 @@ import Alpine from 'alpinejs';
 window.Alpine = Alpine;
 Alpine.start();
 
+// Follow the actual preceding page in this tab when it belongs to this app.
+// The server-provided href remains the fallback for direct links and bookmarks.
+const backLink = document.querySelector('[data-context-back]');
+if (backLink && document.referrer) {
+    try {
+        const previous = new URL(document.referrer);
+        if (previous.origin === location.origin && previous.href !== location.href &&
+            !['/login', '/logout'].includes(previous.pathname)) {
+            backLink.href = previous.href;
+            backLink.setAttribute('aria-label', 'Kembali ke halaman sebelumnya');
+            backLink.title = 'Kembali ke halaman sebelumnya';
+        }
+    } catch { /* Keep the server-provided destination. */ }
+}
+
 const dirtyForms = new Set();
 const confirmedForms = new WeakSet();
 let activeDialog = null;
