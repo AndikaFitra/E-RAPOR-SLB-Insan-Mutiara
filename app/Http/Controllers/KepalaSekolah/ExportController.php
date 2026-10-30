@@ -77,6 +77,11 @@ class ExportController extends Controller
                 $values[] = $row['status'];
                 foreach ($values as $col => $value) {
                     $sheet->setCellValueExplicit([$col + 1, $index + 5], $value ?? '', is_int($value) || is_float($value) ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
+                    if ($col >= 5 && (is_int($value) || is_float($value))) {
+                        $format = (float) $value === floor((float) $value) ? '0' : '0.00';
+                        $cell = Coordinate::stringFromColumnIndex($col + 1).($index + 5);
+                        $sheet->getStyle($cell)->getNumberFormat()->setFormatCode($format);
+                    }
                 }
                 if ($index % 2 === 1) $sheet->getStyle('A'.($index + 5).':'.$lastColumn.($index + 5))->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F7F6F2');
             }
@@ -84,7 +89,6 @@ class ExportController extends Controller
             $sheet->getStyle("A4:{$lastColumn}{$lastRow}")->getBorders()->getBottom()->setBorderStyle(Border::BORDER_HAIR)->getColor()->setRGB('D8DAE4');
             $sheet->getStyle("A5:{$lastColumn}{$lastRow}")->getAlignment()->setVertical(Alignment::VERTICAL_CENTER);
             $sheet->getStyle("B5:B{$lastRow}")->getNumberFormat()->setFormatCode('@');
-            $sheet->getStyle("F5:{$lastColumn}{$lastRow}")->getNumberFormat()->setFormatCode('0.##');
             $sheet->freezePane('F5');
             $sheet->setAutoFilter("A4:{$lastColumn}{$lastRow}");
             $sheet->getPageSetup()->setOrientation('landscape')->setFitToWidth(1)->setFitToHeight(0);

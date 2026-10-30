@@ -156,6 +156,8 @@ class ReportWorkflowTest extends TestCase
             $this->assertSame('1234567890', $sheet->getCell('B6')->getValue());
             $this->assertEquals(37, $sheet->getCell('F6')->getValue());
             $this->assertEquals(37, $sheet->getCell('G6')->getValue());
+            $this->assertSame('0', $sheet->getStyle('F6')->getNumberFormat()->getFormatCode());
+            $this->assertSame('0', $sheet->getStyle('G6')->getNumberFormat()->getFormatCode());
             $this->assertSame('Belum ditetapkan', $sheet->getCell('H6')->getValue());
             $book->disconnectWorksheets();
         } finally {
