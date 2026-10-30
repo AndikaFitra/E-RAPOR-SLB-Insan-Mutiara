@@ -27,7 +27,7 @@ class WhatsAppService
     public static function raporMessage(Rapor $rapor, string $recipient): string
     {
         $data = $rapor->snapshot;
-        if (!$data || !$rapor->share_token || !$rapor->isDisetujui()) return '';
+        if (!$rapor->hasValidShareLink()) return '';
         return "Yth. Bapak/Ibu {$recipient},\n\nRapor {$data['siswa']['nama_lengkap']} untuk semester {$data['semester']} {$data['tahun']} telah disetujui.\n"
             ."Silakan unduh dokumen melalui tautan berikut:\n".route('reports.shared', $rapor->share_token)
             ."\n\nMohon menjaga kerahasiaan tautan rapor ini.\n{$data['sekolah']['nama']}\nWali kelas: {$data['wali']}";

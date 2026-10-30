@@ -21,7 +21,7 @@ class Rapor extends Model
         'tgl_rapor',
         'tgl_pengajuan',
         'tgl_persetujuan',
-        'pdf_path', 'snapshot', 'share_token', 'keputusan',
+        'pdf_path', 'snapshot', 'share_token', 'share_token_expires_at', 'keputusan',
     ];
 
     protected function casts(): array
@@ -31,6 +31,7 @@ class Rapor extends Model
             'tgl_rapor'       => 'date',
             'tgl_pengajuan'   => 'datetime',
             'tgl_persetujuan' => 'datetime',
+            'share_token_expires_at' => 'datetime',
         ];
     }
 
@@ -39,6 +40,7 @@ class Rapor extends Model
     public const STATUS_DIAJUKAN = 'diajukan';
     public const STATUS_DIKEMBALIKAN = 'dikembalikan';
     public const STATUS_DISETUJUI = 'disetujui';
+    public const SHARE_LINK_DAYS = 30;
 
     // ── Relasi ──────────────────────────────────────────────
     public function siswa()
@@ -80,6 +82,12 @@ class Rapor extends Model
     public function isDisetujui(): bool
     {
         return $this->status === self::STATUS_DISETUJUI;
+    }
+
+    public function hasValidShareLink(): bool
+    {
+        return $this->isDisetujui() && $this->share_token && $this->snapshot
+            && $this->share_token_expires_at?->isFuture();
     }
 
     public function isLocked(): bool

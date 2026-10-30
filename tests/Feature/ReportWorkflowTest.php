@@ -195,6 +195,25 @@ class ReportWorkflowTest extends TestCase
             ->assertHeader('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
+    public function test_expired_parent_link_can_be_replaced_and_old_link_is_revoked(): void
+    {
+        $this->actingAs($this->wali)->post(route('wali.rapor.submit', $this->student->id))->assertRedirect();
+        $this->actingAs($this->kepala)->post(route('kepala.persetujuan.approve', $this->report->id))->assertRedirect();
+        $oldToken = $this->report->fresh()->share_token;
+        $this->assertNotNull($this->report->fresh()->share_token_expires_at);
+
+        $this->travel(31)->days();
+        $this->get(route('reports.shared', $oldToken))->assertNotFound();
+        $this->actingAs($this->wali)->post(route('wali.distribusi.mark-sent', $this->report->id), ['status_kirim' => 'terkirim'])
+            ->assertStatus(422);
+        $this->actingAs($this->admin)->post(route('wali.distribusi.renew-link', $this->report->id))->assertForbidden();
+        $this->actingAs($this->wali)->post(route('wali.distribusi.renew-link', $this->report->id))->assertRedirect();
+        $newToken = $this->report->fresh()->share_token;
+        $this->assertNotSame($oldToken, $newToken);
+        $this->get(route('reports.shared', $oldToken))->assertNotFound();
+        $this->get(route('reports.shared', $newToken))->assertOk();
+    }
+
     public function test_deleting_parent_contact_archives_it_without_removing_student(): void
     {
         $parent = OrangTua::where('siswa_id', $this->student->id)->firstOrFail();

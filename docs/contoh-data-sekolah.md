@@ -12,7 +12,7 @@ Seeder ini dapat dijalankan ulang. Data siswa contoh lama yang sebelumnya berawa
 
 ## Login
 
-Semua akun bawaan memakai password `password`. Form login hanya menerima NIP.
+Form login hanya menerima NIP. Untuk seed lokal, sandi contoh dapat diatur melalui `SEED_ACCOUNT_PASSWORD`. Untuk seed production, empat sandi awal yang berbeda wajib diatur di `.env.docker` sesuai panduan deploy. Seeder tidak mereset sandi akun yang sudah ada.
 
 | Peran | NIP |
 | --- | --- |
@@ -23,7 +23,7 @@ Semua akun bawaan memakai password `password`. Form login hanya menerima NIP.
 
 ## Data yang tersedia
 
-Dua Wali Kelas masing-masing mendapat lima siswa di kelas Tunarungu dan Tunagrahita pada setiap periode. Keduanya mempunyai contoh rapor Draft, Dikembalikan, Diajukan, dan Disetujui. Nama siswa dan wali dibuat seperti data sekolah sehari-hari. Tingkat kelas mengikuti tahun ajaran; nilai, narasi, kehadiran, serta catatan wali bervariasi. Rapor final mempunyai PDF dan contoh status pengiriman Terkirim, Gagal, dan Pending. Kelas Autis tetap tersedia sebagai data akademik, tetapi tidak mempunyai akun Wali Kelas bawaan.
+Dua Wali Kelas masing-masing mendapat lima siswa di kelas Tunarungu dan Tunagrahita pada setiap periode. Keduanya mempunyai contoh rapor Draft, Dikembalikan, Diajukan, dan Disetujui. Nama siswa dan wali dibuat seperti data sekolah sehari-hari. Tingkat kelas mengikuti tahun ajaran; nilai mapel contoh yang terisi adalah 85, sedangkan narasi, kehadiran, serta catatan wali bervariasi. Rapor final mempunyai PDF dan contoh status pengiriman Terkirim, Gagal, dan Pending. Kelas Autis tetap tersedia sebagai data akademik, tetapi tidak mempunyai akun Wali Kelas bawaan.
 
 Siswa Nabila Fauziah belum ditugaskan ke kelas, Rizky Ramadhan tidak aktif, dan guru Mira Susanti belum memiliki penugasan. Ketiganya berguna untuk memperlihatkan filter dan alur administrasi.
 

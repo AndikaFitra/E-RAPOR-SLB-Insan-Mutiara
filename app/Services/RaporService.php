@@ -191,9 +191,10 @@ class RaporService
                 $rapor->update([
                     'status' => Rapor::STATUS_DISETUJUI, 'tgl_persetujuan' => now(),
                     'snapshot' => $data, 'pdf_path' => $path, 'share_token' => Str::random(64),
+                    'share_token_expires_at' => now()->addDays(Rapor::SHARE_LINK_DAYS),
                 ]);
             } else {
-                $rapor->update(['status' => Rapor::STATUS_DIKEMBALIKAN, 'catatan_revisi' => $note, 'tgl_persetujuan' => null, 'share_token' => null, 'snapshot' => null, 'pdf_path' => null]);
+                $rapor->update(['status' => Rapor::STATUS_DIKEMBALIKAN, 'catatan_revisi' => $note, 'tgl_persetujuan' => null, 'share_token' => null, 'share_token_expires_at' => null, 'snapshot' => null, 'pdf_path' => null]);
             }
             $this->lockComponents($rapor, $approved);
             ActivityLog::log($approved ? 'Rapor disetujui' : 'Rapor dikembalikan: '.$note, $rapor, $approved ? 'Disetujui' : 'Dikembalikan');

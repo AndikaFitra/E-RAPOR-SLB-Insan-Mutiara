@@ -74,7 +74,7 @@ class AkunController extends Controller
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'nip'      => ['required', 'digits:18', Rule::unique('users', 'nip')],
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:12',
             'role'     => 'required|in:admin,kepala_sekolah,wali_kelas',
             'guru_id'  => 'nullable|required_if:role,wali_kelas|exists:guru,id|unique:users,guru_id',
         ]);

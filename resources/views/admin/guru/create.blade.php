@@ -60,7 +60,7 @@
                             placeholder="Masukkan NIP atau biarkan kosong"
                             class="w-full px-3.5 py-2.5 border border-[#D5D7E2] rounded-xl text-gray-800 bg-white placeholder-gray-400 focus:outline-none focus:border-[#555783]"
                         />
-                        <p class="text-[11px] text-gray-400 mt-1">Kosongkan jika belum memiliki NIP resmi.</p>
+                        <p class="text-[11px] text-gray-400 mt-1">NIP 18 digit wajib diisi jika membuat akun. Kosongkan jika belum memiliki NIP resmi dan tidak membuat akun.</p>
                     </div>
                 </div>
 
@@ -113,6 +113,7 @@
                             placeholder="guru@slbinsanmutiara.sch.id"
                             class="w-full px-3.5 py-2.5 border border-[#D5D7E2] rounded-xl text-gray-800 bg-white placeholder-gray-400 focus:outline-none focus:border-[#555783]"
                         />
+                        <p class="text-[11px] text-gray-400 mt-1">Isi email, NIP, dan sandi jika guru langsung diberi akun.</p>
                     </div>
                     <div>
                         <label class="block font-semibold text-[#1A1A2E] mb-1.5">Status Guru *</label>
@@ -124,6 +125,17 @@
                             <option value="Aktif" {{ old('status') === 'Aktif' ? 'selected' : '' }}>Aktif</option>
                             <option value="Tidak aktif" {{ old('status') === 'Tidak aktif' ? 'selected' : '' }}>Tidak aktif</option>
                         </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-semibold text-[#1A1A2E] mb-1.5" for="guru-password">Sandi akun (jika email diisi)</label>
+                        <input id="guru-password" type="password" name="password" minlength="12" autocomplete="new-password" class="w-full px-3.5 py-2.5 border border-[#D5D7E2] rounded-xl text-gray-800 bg-white focus:outline-none focus:border-[#555783]" />
+                        <p class="text-[11px] text-gray-400 mt-1">Minimal 12 karakter. Berikan sandi kepada guru melalui jalur yang aman.</p>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-[#1A1A2E] mb-1.5" for="guru-password-confirmation">Ulangi sandi akun</label>
+                        <input id="guru-password-confirmation" type="password" name="password_confirmation" minlength="12" autocomplete="new-password" class="w-full px-3.5 py-2.5 border border-[#D5D7E2] rounded-xl text-gray-800 bg-white focus:outline-none focus:border-[#555783]" />
                     </div>
                 </div>
             </div>

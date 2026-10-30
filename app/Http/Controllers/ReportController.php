@@ -63,7 +63,8 @@ class ReportController extends Controller
 
     public function shared(Request $request, string $token)
     {
-        $rapor = Rapor::where('share_token', $token)->where('status', Rapor::STATUS_DISETUJUI)->firstOrFail();
+        $rapor = Rapor::where('share_token', $token)->where('status', Rapor::STATUS_DISETUJUI)
+            ->where('share_token_expires_at', '>', now())->firstOrFail();
         abort_unless($rapor->snapshot, 404);
         return $this->download($rapor->snapshot, $rapor, true)->header('X-Robots-Tag', 'noindex, nofollow')->header('Referrer-Policy', 'no-referrer');
     }
