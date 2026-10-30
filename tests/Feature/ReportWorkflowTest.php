@@ -151,15 +151,26 @@ class ReportWorkflowTest extends TestCase
             file_put_contents($path, $response->getContent());
             $book = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
             $sheet = $book->getActiveSheet();
-            $this->assertSame('1234567890', $sheet->getCell('B3')->getValue());
-            $this->assertEquals(37, $sheet->getCell('F3')->getValue());
-            $this->assertEquals(37, $sheet->getCell('G3')->getValue());
-            $this->assertSame('Belum ditetapkan', $sheet->getCell('H3')->getValue());
+            $this->assertSame('LEGER / REKAP NILAI · '.$this->year->label, $sheet->getCell('A2')->getValue());
+            $this->assertSame('Siswa', $sheet->getCell('A4')->getValue());
+            $this->assertSame('1234567890', $sheet->getCell('B6')->getValue());
+            $this->assertEquals(37, $sheet->getCell('F6')->getValue());
+            $this->assertEquals(37, $sheet->getCell('G6')->getValue());
+            $this->assertSame('Belum ditetapkan', $sheet->getCell('H6')->getValue());
             $book->disconnectWorksheets();
         } finally {
             unlink($path);
         }
         $this->get(route('kepala.leger.export',['format'=>'pdf','minimum'=>90]))->assertRedirect()->assertSessionHas('error');
+    }
+
+    public function test_headmaster_review_lists_submitted_reports_first(): void
+    {
+        $this->report->update(['status'=>'diajukan','tgl_pengajuan'=>'2026-10-01']);
+        Rapor::create(['siswa_id'=>$this->outsider->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui','tgl_pengajuan'=>'2026-10-20']);
+        $this->actingAs($this->kepala)->get(route('kepala.persetujuan.index'))
+            ->assertOk()->assertSeeInOrder(['Siswa Pengujian','Siswa Kelas Lain']);
     }
 
     public function test_evaluation_saves_achievements_and_extracurricular_grades(): void
