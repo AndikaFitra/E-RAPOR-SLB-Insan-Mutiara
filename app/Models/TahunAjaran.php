@@ -14,7 +14,7 @@ class TahunAjaran extends Model
     protected $fillable = [
         'tahun',
         'semester',
-        'is_aktif', 'tgl_mulai', 'tgl_selesai', 'batas_pengisian', 'pengisian_ditutup_pada',
+        'is_aktif', 'tgl_mulai', 'tgl_selesai', 'batas_pengisian', 'pengisian_ditutup_pada', 'ditutup_pada',
     ];
 
     protected function casts(): array
@@ -23,6 +23,7 @@ class TahunAjaran extends Model
             'is_aktif' => 'boolean',
             'batas_pengisian' => 'date',
             'pengisian_ditutup_pada' => 'datetime',
+            'ditutup_pada' => 'datetime',
         ];
     }
 

@@ -22,11 +22,12 @@ class SiswaController extends Controller
             ->when($request->kelas_id,fn($q)=>$q->whereHas('penugasanKelas',fn($q)=>$q->where('kelas_id',$request->kelas_id)->where('tahun_ajaran_id',$tahunAktif?->id)))
             ->when($request->tingkat,fn($q)=>$q->whereHas('penugasanKelas',fn($q)=>$q->where('tingkat',$request->tingkat)->where('tahun_ajaran_id',$tahunAktif?->id)))
             ->when($request->status === 'aktif',fn($q)=>$q->where('is_aktif',true))
-            ->when($request->status === 'nonaktif',fn($q)=>$q->where('is_aktif',false))
+            ->when($request->status === 'nonaktif',fn($q)=>$q->where('is_aktif',false)->whereNull('lulus_pada_tahun_ajaran_id'))
+            ->when($request->status === 'lulus',fn($q)=>$q->where('is_aktif',false)->whereNotNull('lulus_pada_tahun_ajaran_id'))
             ->when($request->filter === 'belum_lengkap',fn($q)=>$q->where(fn($q)=>$q->whereNull('tempat_lahir')->orWhereNull('tgl_lahir')));
         $siswaList=$query->orderByDesc('is_aktif')->orderBy('nama_lengkap')->get()->map(function($s) {
             $a=$s->penugasanAktif();
-            return ['id'=>$s->id,'nama'=>$s->nama_lengkap,'nis'=>$s->nis ?? '—','nisn'=>$s->nisn,'kelas'=>$a?->kelas?->nama ?? 'Belum ditugaskan','tingkat_fase'=>($a?->tingkat ?? '—').' / '.($a?->fase ?? '—'),'kekhususan'=>$s->kekhususan,'status'=>$s->is_aktif?'Aktif':'Tidak Aktif'];
+            return ['id'=>$s->id,'nama'=>$s->nama_lengkap,'nis'=>$s->nis ?? '—','nisn'=>$s->nisn,'kelas'=>$a?->kelas?->nama ?? 'Belum ditugaskan','tingkat_fase'=>($a?->tingkat ?? '—').' / '.($a?->fase ?? '—'),'kekhususan'=>$s->kekhususan,'status'=>$s->is_aktif?'Aktif':($s->lulus_pada_tahun_ajaran_id?'Lulus':'Tidak Aktif')];
         })->all();
         return view('admin.siswa.index',compact('tahunAktif','kelasList','siswaList'));
     }
@@ -104,7 +105,9 @@ class SiswaController extends Controller
             if($old && $old->kelas_id != ($input['kelas_id'] ?? null) && !$request->boolean('konfirmasi_pindah')) {
                 throw ValidationException::withMessages(['konfirmasi_pindah'=>'Centang konfirmasi perpindahan setelah memeriksa kelas tujuan.']);
             }
-            $siswa->fill(collect($input)->except(['kelas_id','tingkat','fase','konfirmasi_pindah'])->all())->save();
+            $siswa->fill(collect($input)->except(['kelas_id','tingkat','fase','konfirmasi_pindah'])->all());
+            if ($siswa->is_aktif) $siswa->lulus_pada_tahun_ajaran_id = null;
+            $siswa->save();
             if(!empty($input['kelas_id'])) {
                 abort_unless($periode,422,'Aktifkan tahun ajaran sebelum menetapkan kelas.');
                 PenugasanSiswaKelas::updateOrCreate(['siswa_id'=>$siswa->id,'tahun_ajaran_id'=>$periode->id],['kelas_id'=>$input['kelas_id'],'tingkat'=>$input['tingkat'],'fase'=>$input['fase']]);

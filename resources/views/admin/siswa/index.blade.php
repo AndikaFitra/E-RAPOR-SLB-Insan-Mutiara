@@ -92,6 +92,7 @@
                         <option value="">Status: Semua</option>
                         <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
                         <option value="nonaktif" @selected(request('status') === 'nonaktif')>Tidak aktif</option>
+                        <option value="lulus" @selected(request('status') === 'lulus')>Lulus</option>
                     </select>
                 </div>
             </div>
@@ -165,8 +166,10 @@
                                         >
                                             Nonaktifkan
                                         </button>
-                                    @else
+                                    @elseif($s['status'] === 'Tidak Aktif')
                                         <span class="inline-flex min-h-8 items-center rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-gray-500">Sudah nonaktif</span>
+                                    @else
+                                        <span class="inline-flex min-h-8 items-center rounded-lg border border-gray-200 bg-gray-50 px-2.5 text-gray-500">Lulus</span>
                                     @endif
                                 </div>
                             </td>

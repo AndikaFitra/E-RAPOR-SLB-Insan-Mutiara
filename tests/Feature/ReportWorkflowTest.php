@@ -235,6 +235,32 @@ class ReportWorkflowTest extends TestCase
         $this->post(route('wali.asesmen.store'), $this->scorePayload())->assertRedirect();
     }
 
+    public function test_closing_genap_promotes_students_and_graduates_class_twelve_without_copying_scores(): void
+    {
+        $this->year->update(['semester'=>'Genap','pengisian_ditutup_pada'=>now()]);
+        $this->report->update(['status'=>'disetujui']);
+        Rapor::create(['siswa_id'=>$this->outsider->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui']);
+        $graduate = Siswa::create(['nama_lengkap'=>'Siswa Kelas XII','nisn'=>'1234567895','jenis_kelamin'=>'P','kekhususan'=>'Tunarungu']);
+        PenugasanSiswaKelas::create(['siswa_id'=>$graduate->id,'kelas_id'=>$this->kelas->id,
+            'tahun_ajaran_id'=>$this->year->id,'tingkat'=>'XII','fase'=>'F']);
+        Rapor::create(['siswa_id'=>$graduate->id,'tahun_ajaran_id'=>$this->year->id,
+            'wali_kelas_id'=>$this->wali->guru_id,'status'=>'disetujui']);
+
+        $this->actingAs($this->admin)->post(route('admin.tahun-ajaran.tutup-tahun', $this->year->id))->assertRedirect();
+        $next = TahunAjaran::where('tahun','2027/2028')->where('semester','Ganjil')->firstOrFail();
+        $this->assertTrue($next->is_aktif);
+        $this->assertFalse($this->year->fresh()->is_aktif);
+        $this->assertDatabaseHas('penugasan_siswa_kelas', ['siswa_id'=>$this->student->id,
+            'tahun_ajaran_id'=>$next->id,'tingkat'=>'IX','fase'=>'D']);
+        $this->assertDatabaseHas('siswa', ['id'=>$graduate->id,'is_aktif'=>false,
+            'lulus_pada_tahun_ajaran_id'=>$this->year->id]);
+        $this->assertDatabaseMissing('penugasan_siswa_kelas', ['siswa_id'=>$graduate->id,'tahun_ajaran_id'=>$next->id]);
+        $this->assertDatabaseMissing('nilai_asesmen', ['siswa_id'=>$this->student->id,'tahun_ajaran_id'=>$next->id]);
+        $this->assertDatabaseMissing('rapor', ['siswa_id'=>$this->student->id,'tahun_ajaran_id'=>$next->id]);
+        $this->post(route('admin.tahun-ajaran.tutup-tahun', $this->year->id))->assertStatus(422);
+    }
+
     public function test_evaluation_saves_achievements_and_extracurricular_grades(): void
     {
         $activity=Ekstrakurikuler::create(['nama'=>'Pramuka']);

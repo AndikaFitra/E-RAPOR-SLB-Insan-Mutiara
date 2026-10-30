@@ -30,6 +30,18 @@
         </section>
     @endif
 
+    @if($periode?->semester === 'Genap' && !$periode->ditutup_pada)
+        <section class="panel space-y-3">
+            <h2>Tutup Tahun Ajaran</h2>
+            <p>Periode berikutnya: {{ (int) substr($periode->tahun, 5, 4) }}/{{ (int) substr($periode->tahun, 5, 4) + 1 }} · Semester Ganjil. {{ $graduatingCount }} siswa kelas XII ditandai lulus; siswa lain naik satu tingkat. Penugasan disalin, nilai dan rapor baru dimulai kosong.</p>
+            <form method="POST" action="{{ route('admin.tahun-ajaran.tutup-tahun', $periode->id) }}" data-confirm="Tutup tahun ajaran dan buat periode Ganjil berikutnya? Tindakan ini memindahkan siswa aktif ke tingkat berikutnya.">
+                @csrf
+                <button class="btn" @disabled(!$periode->pengisian_ditutup_pada || $progress->sum('total') === 0 || $progress->sum('disetujui') !== $progress->sum('total'))>Tutup Tahun Ajaran</button>
+            </form>
+            @unless($periode->pengisian_ditutup_pada)<p>Tutup pengisian rapor terlebih dahulu.</p>@endunless
+        </section>
+    @endif
+
     <section class="panel space-y-4">
         <h2>Tambah periode</h2>
         <form method="POST" action="{{ route('admin.tahun-ajaran.store') }}" class="grid sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
@@ -45,7 +57,7 @@
 
     @foreach($years as $y)
         <section class="panel space-y-3">
-            <h2>{{ $y->label }} · {{ $y->is_aktif ? 'Aktif' : 'Tidak aktif' }}</h2>
+            <h2>{{ $y->label }} · {{ $y->is_aktif ? 'Aktif' : ($y->ditutup_pada ? 'Ditutup' : 'Tidak aktif') }}</h2>
             <form method="POST" action="{{ route('admin.tahun-ajaran.update', $y->id) }}" class="grid sm:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
                 @csrf @method('PUT')
                 <label>Tahun<input required name="tahun" value="{{ $y->tahun }}"></label>

@@ -15,6 +15,7 @@ class SettingsController extends Controller
         $periode = TahunAjaran::getAktif();
         $years = TahunAjaran::orderByDesc('tahun')->get();
         $progress = collect();
+        $graduatingCount = 0;
         if ($periode) {
             $assignments = PenugasanSiswaKelas::with('kelas')->where('tahun_ajaran_id', $periode->id)
                 ->whereHas('siswa', fn ($q) => $q->where('is_aktif', true))->get();
@@ -25,8 +26,9 @@ class SettingsController extends Controller
                 'total' => $group->count(),
                 'disetujui' => $group->filter(fn ($assignment) => $approved->has($assignment->siswa_id))->count(),
             ])->values();
+            $graduatingCount = $assignments->where('tingkat', 'XII')->count();
         }
-        return view('academic.years', compact('periode', 'years', 'progress'));
+        return view('academic.years', compact('periode', 'years', 'progress', 'graduatingCount'));
     }
 
     public function saveYear(Request $request, ?int $id = null)
