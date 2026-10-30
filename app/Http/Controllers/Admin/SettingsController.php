@@ -26,7 +26,10 @@ class SettingsController extends Controller
                 'total' => $group->count(),
                 'disetujui' => $group->filter(fn ($assignment) => $approved->has($assignment->siswa_id))->count(),
             ])->values();
-            $graduatingCount = $assignments->where('tingkat', 'XII')->count();
+            $notGraduating = Rapor::where('tahun_ajaran_id', $periode->id)->whereIn('keputusan', ['Belum lulus', 'Tinggal kelas'])
+                ->pluck('siswa_id')->flip();
+            $graduatingCount = $assignments->where('tingkat', 'XII')
+                ->reject(fn ($assignment) => $notGraduating->has($assignment->siswa_id))->count();
         }
         return view('academic.years', compact('periode', 'years', 'progress', 'graduatingCount'));
     }
