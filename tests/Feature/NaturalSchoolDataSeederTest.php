@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{DistribusiRapor, KelasMataPelajaran, PenugasanSiswaKelas, PenugasanWaliKelas, Rapor, Siswa, TahunAjaran, User};
+use App\Models\{DistribusiRapor, KelasMataPelajaran, NilaiAsesmen, PenugasanSiswaKelas, PenugasanWaliKelas, Rapor, Siswa, TahunAjaran, User};
 use Database\Seeders\NaturalSchoolDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -16,6 +16,9 @@ class NaturalSchoolDataSeederTest extends TestCase
     {
         Storage::fake('local');
         $this->seed();
+
+        $this->assertGreaterThan(0, NilaiAsesmen::whereNotNull('nilai_akhir')->count());
+        $this->assertSame(0, NilaiAsesmen::whereNotNull('nilai_akhir')->where('nilai_akhir', '!=', 85)->count());
 
         foreach (TahunAjaran::all() as $period) {
             $this->assertSame(10, PenugasanSiswaKelas::where('tahun_ajaran_id', $period->id)
