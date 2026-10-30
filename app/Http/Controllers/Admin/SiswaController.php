@@ -20,8 +20,11 @@ class SiswaController extends Controller
             ->when($request->search,fn($q)=>$q->search($request->search))
             ->when($request->kekhususan,fn($q)=>$q->where('kekhususan',$request->kekhususan))
             ->when($request->kelas_id,fn($q)=>$q->whereHas('penugasanKelas',fn($q)=>$q->where('kelas_id',$request->kelas_id)->where('tahun_ajaran_id',$tahunAktif?->id)))
+            ->when($request->tingkat,fn($q)=>$q->whereHas('penugasanKelas',fn($q)=>$q->where('tingkat',$request->tingkat)->where('tahun_ajaran_id',$tahunAktif?->id)))
+            ->when($request->status === 'aktif',fn($q)=>$q->where('is_aktif',true))
+            ->when($request->status === 'nonaktif',fn($q)=>$q->where('is_aktif',false))
             ->when($request->filter === 'belum_lengkap',fn($q)=>$q->where(fn($q)=>$q->whereNull('tempat_lahir')->orWhereNull('tgl_lahir')));
-        $siswaList=$query->orderBy('nama_lengkap')->get()->map(function($s) {
+        $siswaList=$query->orderByDesc('is_aktif')->orderBy('nama_lengkap')->get()->map(function($s) {
             $a=$s->penugasanAktif();
             return ['id'=>$s->id,'nama'=>$s->nama_lengkap,'nis'=>$s->nis ?? '—','nisn'=>$s->nisn,'kelas'=>$a?->kelas?->nama ?? 'Belum ditugaskan','tingkat_fase'=>($a?->tingkat ?? '—').' / '.($a?->fase ?? '—'),'kekhususan'=>$s->kekhususan,'status'=>$s->is_aktif?'Aktif':'Tidak Aktif'];
         })->all();

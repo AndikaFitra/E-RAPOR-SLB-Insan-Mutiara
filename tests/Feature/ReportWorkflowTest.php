@@ -52,6 +52,19 @@ class ReportWorkflowTest extends TestCase
         return ['kelas_id'=>$this->kelas->id,'mapel_id'=>$this->subject->id,'nilai'=>[['siswa_id'=>$this->student->id,'nilai_akhir'=>$value,'narasi_capaian'=>$value === null ? null : 'Narasi hasil pembaruan.']]];
     }
 
+    public function test_admin_student_filters_use_current_assignment_and_active_status(): void
+    {
+        $inactive = Siswa::create(['nama_lengkap'=>'A Siswa Nonaktif','nisn'=>'1234567892','jenis_kelamin'=>'P','kekhususan'=>'Autis','is_aktif'=>false]);
+        PenugasanSiswaKelas::create(['siswa_id'=>$inactive->id,'kelas_id'=>$this->kelas->id,'tahun_ajaran_id'=>$this->year->id,'tingkat'=>'IX','fase'=>'D']);
+
+        $this->actingAs($this->admin)->get(route('admin.siswa.index'))
+            ->assertOk()->assertSeeInOrder(['Siswa Kelas Lain','Siswa Pengujian','A Siswa Nonaktif']);
+        $this->get(route('admin.siswa.index', ['tingkat'=>'VIII','status'=>'aktif']))
+            ->assertOk()->assertSee('Siswa Pengujian')->assertDontSee('A Siswa Nonaktif');
+        $this->get(route('admin.siswa.index', ['tingkat'=>'IX','kekhususan'=>'Autis','status'=>'nonaktif']))
+            ->assertOk()->assertSee('A Siswa Nonaktif')->assertDontSee('Siswa Pengujian');
+    }
+
     public function test_wali_only_sees_assigned_students(): void
     {
         $this->actingAs($this->wali)->get(route('wali.rapor.index'))->assertOk()->assertSee('Siswa Pengujian')->assertDontSee('Siswa Kelas Lain');
